@@ -1,0 +1,130 @@
+.relation-chain {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  padding: 12px 20px;
+  max-width: 90vw;
+  z-index: 10;
+}
+
+.relation-chain-path {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.chain-node {
+  font-weight: 600;
+  color: #1a1a2e;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.chain-node.collapsible {
+  cursor: pointer;
+  background: #f0f4f8;
+  transition: all 0.2s;
+}
+
+.chain-node.collapsible:hover {
+  background: #e0e8f0;
+  color: #4a90d9;
+}
+
+.chain-node.branch-spouse {
+  font-weight: 600;
+  color: #1a1a2e;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  background: #faf5f0;
+}
+
+.chain-edge {
+  color: #999;
+  padding: 0 2px;
+  font-size: 12px;
+  white-space: nowrap;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 1.2;
+}
+
+.chain-edge-label {
+  color: #999;
+  font-size: 12px;
+}
+
+.chain-edge-arrow {
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.chain-branch-group {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  gap: 2px;
+  border: 1px dashed #d0dce8;
+  border-radius: 8px;
+  padding: 4px 2px;
+  background: #fafbfc;
+}
+
+.chain-branch-row {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.relation-chain-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chain-ctrl-btn {
+  font-size: 12px;
+  color: #4a90d9;
+  background: none;
+  border: 1px solid #d0dce8;
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chain-ctrl-btn:hover {
+  background: #f0f4f8;
+}
+
+@media (max-width: 640px) {
+  .relation-chain {
+    bottom: 80px;
+    padding: 10px 14px;
+    max-width: calc(100vw - 24px);
+  }
+
+  .relation-chain-path {
+    font-size: 13px;
+  }
+
+  .chain-ctrl-btn {
+    min-height: 36px;
+    padding: 4px 12px;
+  }
+}

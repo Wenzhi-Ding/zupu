@@ -1,0 +1,43 @@
+.privacy-banner {
+  width: 100%;
+  z-index: 50;
+  background-color: #e8f4fd;
+  border-bottom: 1px solid #b8daef;
+  padding: 10px 24px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  color: #2c3e50;
+  flex-shrink: 0;
+}
+
+.privacy-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: #4a90d9;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  font-weight: 500;
+  margin-left: 12px;
+}
+
+.privacy-dismiss-btn:hover {
+  background-color: #d5e7fa;
+}
+
+@media (max-width: 640px) {
+  .privacy-banner {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .privacy-dismiss-btn {
+    font-size: 12px;
+  }
+}

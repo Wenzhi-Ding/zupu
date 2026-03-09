@@ -1,0 +1,168 @@
+.person-card {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.person-card .card-bg {
+  fill: #ffffff;
+  stroke: #c8d6e5;
+  stroke-width: 2;
+  transition: all 0.2s;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
+.person-card:hover .card-bg {
+  stroke: #4a90d9;
+  filter: drop-shadow(0 4px 12px rgba(74, 144, 217, 0.2));
+}
+
+.person-card.selected .card-bg {
+  stroke: #4a90d9;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 12px rgba(74, 144, 217, 0.3));
+}
+
+.person-card.male .card-bg {
+  fill: #e8f4fd;
+  stroke: #7eb8da;
+}
+
+.person-card.female .card-bg {
+  fill: #fde8f0;
+  stroke: #da7ea8;
+}
+
+.person-card.deceased .card-bg {
+  fill: #e0e0e0;
+}
+
+.person-card.deceased .card-name {
+  fill: #666;
+}
+
+.person-card.male.selected .card-bg {
+  stroke: #2980b9;
+  stroke-width: 2.5;
+}
+
+.person-card.female.selected .card-bg {
+  stroke: #c0392b;
+  stroke-width: 2.5;
+}
+
+.card-name {
+  font-size: 14px;
+  font-weight: 600;
+  fill: #1a1a2e;
+  pointer-events: none;
+}
+
+.card-title {
+  font-size: 10px;
+  fill: #888;
+  pointer-events: none;
+}
+
+.card-info {
+  font-size: 12px;
+  fill: #666;
+  pointer-events: none;
+}
+
+.card-year {
+  font-size: 10px;
+  fill: #999;
+  pointer-events: none;
+}
+
+.card-add-btn circle {
+  fill: #f0f0f0;
+  stroke: #ccc;
+  stroke-width: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-add-btn:hover circle {
+  fill: #4a90d9;
+  stroke: #4a90d9;
+}
+
+.card-add-btn text {
+  fill: #888;
+  pointer-events: none;
+  transition: fill 0.2s;
+}
+
+.card-add-btn:hover text {
+  fill: white;
+}
+
+.card-collapse-btn circle {
+  fill: #f8f9fa;
+  stroke: #ddd;
+  stroke-width: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-collapse-btn:hover circle {
+  fill: #e0e0e0;
+}
+
+.card-collapse-btn text {
+  fill: #666;
+  pointer-events: none;
+  font-size: 10px;
+}
+
+@media (pointer: coarse) {
+  .card-add-btn circle,
+  .card-collapse-btn circle {
+    r: 12;
+  }
+}
+
+.person-card.drag-source .card-bg {
+  opacity: 0.3;
+  stroke-dasharray: 4 2;
+}
+
+.person-card.drag-source .card-name,
+.person-card.drag-source .card-info,
+.person-card.drag-source .card-year {
+  opacity: 0.3;
+}
+
+.person-card.drag-ghost .card-bg {
+  opacity: 0.85;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.25));
+}
+
+.person-card.drag-ghost {
+  pointer-events: none;
+}
+
+.person-card.on-path .card-bg {
+  stroke: #f39c12;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.5));
+}
+
+.person-card.path-end .card-bg {
+  stroke: #e74c3c;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.5));
+}
+
+.person-card.relation-dim .card-bg {
+  opacity: 0.3;
+}
+
+.person-card.relation-dim .card-name,
+.person-card.relation-dim .card-info,
+.person-card.relation-dim .card-year,
+.person-card.relation-dim .card-title {
+  opacity: 0.3;
+}

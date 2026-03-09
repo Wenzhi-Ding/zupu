@@ -1,0 +1,119 @@
+.family-tree-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(74, 144, 217, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(217, 74, 144, 0.03) 0%, transparent 50%),
+    #fafbfc;
+}
+
+.family-tree-svg {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.family-tree-svg:active {
+  cursor: grabbing;
+}
+
+.family-tree-svg.is-dragging {
+  cursor: grabbing;
+}
+
+.connector-line {
+  stroke: #b0bec5;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.connector-couple {
+  stroke: #e91e63;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+  fill: none;
+}
+
+.connector-cross {
+  stroke: #90a4ae;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+  fill: none;
+}
+
+.zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.zoom-controls button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.zoom-controls button:hover {
+  background: #e0e0e0;
+}
+
+.zoom-controls span {
+  font-size: 13px;
+  color: #666;
+  min-width: 40px;
+  text-align: center;
+}
+
+.generation-guide rect {
+  fill: rgba(74, 144, 217, 0.08);
+  stroke: rgba(74, 144, 217, 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 6 3;
+}
+
+.generation-guide-label {
+  font-size: 12px;
+  fill: rgba(74, 144, 217, 0.6);
+  font-weight: 500;
+}
+
+.connector-path-highlight {
+  stroke: #f39c12;
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(243, 156, 18, 0.6));
+}
+
+@media (pointer: coarse) {
+  .zoom-controls {
+    bottom: 16px;
+    right: 16px;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .zoom-controls button {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+}

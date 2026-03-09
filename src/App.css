@@ -1,0 +1,69 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #e8ecf0;
+  flex-shrink: 0;
+}
+
+.toolbar-row .toolbar {
+  flex: 1;
+  border-bottom: none;
+}
+
+.toolbar-extras {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 24px;
+  flex-shrink: 0;
+}
+
+.help-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.help-btn:hover {
+  background: #f0f0f0;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .toolbar-row {
+    flex-wrap: wrap;
+  }
+
+  .toolbar-extras {
+    padding: 0 12px 8px;
+    gap: 6px;
+  }
+
+  .help-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
