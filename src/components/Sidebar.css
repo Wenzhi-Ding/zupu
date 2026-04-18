@@ -199,12 +199,35 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: 85vw;
-    max-width: 320px;
+    width: 100vw;
+    max-width: 360px;
     min-width: auto;
     z-index: 201;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
     animation: slideInRight 0.25s ease;
+  }
+
+  .sidebar-header {
+    padding-bottom: 16px;
+  }
+
+  .sidebar-edit .form-group input,
+  .sidebar-edit .form-group select {
+    font-size: 16px;
+  }
+
+  .bio-textarea {
+    font-size: 16px;
+  }
+
+  .btn-edit, .btn-delete {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .btn-confirm, .btn-cancel {
+    padding: 10px;
+    font-size: 14px;
   }
 
   @keyframes slideInRight {

@@ -114,13 +114,17 @@
 
 @media (max-width: 640px) {
   .relation-chain {
-    bottom: 80px;
+    bottom: 68px;
     padding: 10px 14px;
-    max-width: calc(100vw - 24px);
+    max-width: calc(100vw - 16px);
+    left: 8px;
+    right: 8px;
+    transform: none;
   }
 
   .relation-chain-path {
     font-size: 13px;
+    gap: 2px;
   }
 
   .chain-ctrl-btn {

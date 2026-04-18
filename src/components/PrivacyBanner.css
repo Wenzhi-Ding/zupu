@@ -3,8 +3,9 @@
   z-index: 50;
   background-color: #e8f4fd;
   border-bottom: 1px solid #b8daef;
-  padding: 10px 24px;
-  font-size: 13px;
+  padding: 14px 24px;
+  font-size: 14px;
+  line-height: 1.5;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -18,13 +19,13 @@
   border: none;
   color: #4a90d9;
   cursor: pointer;
-  font-size: 13px;
-  padding: 4px 12px;
+  font-size: 14px;
+  padding: 6px 16px;
   border-radius: 6px;
   transition: background-color 0.2s ease;
   white-space: nowrap;
   font-weight: 500;
-  margin-left: 12px;
+  margin-left: 16px;
 }
 
 .privacy-dismiss-btn:hover {
@@ -33,11 +34,20 @@
 
 @media (max-width: 640px) {
   .privacy-banner {
-    padding: 8px 12px;
-    font-size: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    flex-wrap: wrap;
+  }
+
+  .privacy-banner span {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .privacy-dismiss-btn {
-    font-size: 12px;
+    font-size: 13px;
+    margin-left: 12px;
+    flex-shrink: 0;
   }
 }

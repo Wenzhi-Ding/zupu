@@ -3,7 +3,7 @@ import { useFamilyStore } from '../store/familyStore';
 import type { Gender } from '../types';
 import './Toolbar.css';
 
-export const Toolbar: React.FC = () => {
+export const Toolbar: React.FC<{ mobileExtra?: React.ReactNode }> = ({ mobileExtra }) => {
   const reset = useFamilyStore((s) => s.reset);
   const addPerson = useFamilyStore((s) => s.addPerson);
   const personCount = useFamilyStore((s) => Object.keys(s.persons).length);
@@ -117,6 +117,7 @@ export const Toolbar: React.FC = () => {
             </button>
           </>
         )}
+        {mobileExtra}
       </div>
     </div>
   );

@@ -247,7 +247,7 @@ export const FamilyTree: React.FC = () => {
     [findParentUnit, clientToSvg, layout, persons]
   );
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     const svg = svgRef.current;
@@ -265,6 +265,13 @@ export const FamilyTree: React.FC = () => {
       y: cy - (cy - prevPan.y) * scale,
     });
   }, []);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    svg.addEventListener('wheel', handleWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -401,7 +408,6 @@ export const FamilyTree: React.FC = () => {
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (e.touches.length === 2) {
-        e.preventDefault();
         dragRef.current = null;
         isTouchPanning.current = false;
         const dist = getTouchDistance(e.touches[0], e.touches[1]);
@@ -437,7 +443,6 @@ export const FamilyTree: React.FC = () => {
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (e.touches.length === 2 && pinchRef.current) {
-        e.preventDefault();
         const dist = getTouchDistance(e.touches[0], e.touches[1]);
         const scale = dist / pinchRef.current.initialDistance;
         const newZoom = Math.min(3, Math.max(0.2, pinchRef.current.initialZoom * scale));
@@ -767,7 +772,6 @@ export const FamilyTree: React.FC = () => {
       <svg
         ref={svgRef}
         className={`family-tree-svg ${dragRender?.isDragging ? 'is-dragging' : ''} ${selectMode ? 'select-mode' : ''}`}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

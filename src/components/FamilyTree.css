@@ -202,6 +202,44 @@
   50% { opacity: 0.7; }
 }
 
+@media (max-width: 640px) {
+  .select-action-bar {
+    left: 8px;
+    right: 8px;
+    bottom: 60px;
+    transform: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+  }
+
+  .select-count {
+    font-size: 13px;
+    width: 100%;
+    text-align: center;
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .select-action-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .select-hint-bar {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    font-size: 12px;
+    text-align: center;
+  }
+}
+
 @media (pointer: coarse) {
   .zoom-controls {
     bottom: 16px;

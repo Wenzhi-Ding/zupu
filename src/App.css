@@ -21,12 +21,16 @@
   border-bottom: none;
 }
 
+.toolbar-extras-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .toolbar-extras {
   display: flex;
   align-items: center;
   gap: 8px;
   padding-right: 24px;
-  flex-shrink: 0;
 }
 
 .help-btn {
@@ -45,6 +49,103 @@
   background: #f0f0f0;
 }
 
+.toolbar-extras a.suggest-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mobile-more-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.mobile-extra {
+  display: none;
+}
+
+.mobile-more-btn:hover {
+  background: #f0f0f0;
+}
+
+.more-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+}
+
+.more-menu {
+  display: none;
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.18);
+  padding: 6px;
+  min-width: 160px;
+  z-index: 200;
+  transform-origin: bottom right;
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.more-menu.open {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.more-menu-item:hover {
+  background: #f0f4ff;
+}
+
+.more-menu-item:active {
+  background: #e0ecff;
+}
+
+.more-menu a.more-menu-item {
+  text-decoration: none;
+  color: #333;
+}
+
+.more-menu-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
 .app-body {
   display: flex;
   flex: 1;
@@ -54,16 +155,22 @@
 
 @media (max-width: 640px) {
   .toolbar-row {
-    flex-wrap: wrap;
+    border-bottom: none;
   }
 
-  .toolbar-extras {
-    padding: 0 12px 8px;
-    gap: 6px;
+  .toolbar-extras-wrapper {
+    display: none;
   }
 
-  .help-btn {
-    padding: 6px 10px;
-    font-size: 12px;
+  .mobile-extra {
+    display: contents;
+  }
+
+  .mobile-more-btn {
+    display: flex;
+  }
+
+  .app-body {
+    padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px));
   }
 }

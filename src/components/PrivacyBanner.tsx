@@ -22,7 +22,7 @@ export const PrivacyBanner: React.FC = () => {
 
   return (
     <div className="privacy-banner">
-      <span>您的所有族谱数据都保存在本地浏览器中，不会上传到任何服务器。请定期使用"导出数据"功能备份您的数据。</span>
+      <span>您的所有族谱数据保存在浏览器本地存储（localStorage）中，不会上传到任何服务器。同域名下的浏览器扩展或脚本可能访问此数据。请定期使用"导出数据"功能备份。</span>
       <button type="button" className="privacy-dismiss-btn" onClick={handleDismiss}>
         知道了
       </button>
