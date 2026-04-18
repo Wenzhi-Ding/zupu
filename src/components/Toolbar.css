@@ -88,6 +88,13 @@
   background: #3a7bc8;
 }
 
+.select-mode-hint {
+  font-size: 13px;
+  color: #4a90d9;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 .relation-hint {
   font-size: 13px;
   color: #4a90d9;

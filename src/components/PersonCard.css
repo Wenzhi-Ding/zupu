@@ -144,6 +144,33 @@
   pointer-events: none;
 }
 
+.person-card.batch-selected .card-bg {
+  stroke: #4a90d9;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(74, 144, 217, 0.4));
+}
+
+.card-select-check .check-circle {
+  fill: rgba(255, 255, 255, 0.9);
+  stroke: #b0bec5;
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.card-select-check .check-circle.checked {
+  fill: #4a90d9;
+  stroke: #4a90d9;
+}
+
+.card-select-check .check-mark {
+  fill: none;
+  stroke: white;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 .person-card.on-path .card-bg {
   stroke: #f39c12;
   stroke-width: 3;

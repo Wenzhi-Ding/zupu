@@ -24,6 +24,10 @@
   cursor: grabbing;
 }
 
+.family-tree-svg.select-mode {
+  cursor: crosshair;
+}
+
 .connector-line {
   stroke: #b0bec5;
   stroke-width: 1.5;
@@ -101,6 +105,101 @@
   fill: none;
   stroke-linecap: round;
   filter: drop-shadow(0 0 4px rgba(243, 156, 18, 0.6));
+}
+
+.rubber-band-rect {
+  fill: rgba(74, 144, 217, 0.1);
+  stroke: #4a90d9;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+  rx: 4;
+  ry: 4;
+  pointer-events: none;
+}
+
+.select-action-bar {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.select-count {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  padding-right: 6px;
+  border-right: 1px solid #eee;
+}
+
+.select-action-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.select-action-btn:hover {
+  background: #f0f0f0;
+}
+
+.select-action-btn.primary {
+  background: #4a90d9;
+  color: white;
+  border-color: #4a90d9;
+}
+
+.select-action-btn.primary:hover {
+  background: #3a7bc8;
+}
+
+.select-action-btn.primary:disabled {
+  background: #90b8dc;
+  cursor: default;
+}
+
+.select-action-btn.danger {
+  color: #e74c3c;
+  border-color: #f5c6cb;
+}
+
+.select-action-btn.danger:hover {
+  background: #fef0ef;
+}
+
+.select-hint-bar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4a90d9;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(74, 144, 217, 0.3);
+  z-index: 10;
+  pointer-events: none;
+  animation: pulse-hint 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-hint {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 @media (pointer: coarse) {

@@ -28,6 +28,10 @@ interface FamilyState {
   relationPickedIds: [string] | [string, string] | [];
   relationPath: string[] | null;
 
+  selectMode: boolean;
+  selectedIds: string[];
+  moveTargetMode: boolean;
+
   _dirtyAfterExport: boolean;
   markExported: () => void;
 
@@ -49,6 +53,13 @@ interface FamilyState {
   reset: () => void;
   toggleRelationMode: () => void;
   pickRelationNode: (id: string) => void;
+  toggleSelectMode: () => void;
+  toggleSelectPerson: (id: string) => void;
+  setSelectedIds: (ids: string[]) => void;
+  clearSelection: () => void;
+  removePersons: (ids: string[]) => void;
+  movePersonsToParent: (personIds: string[], targetParentId: string) => void;
+  setMoveTargetMode: (mode: boolean) => void;
   fetchTrees: () => Promise<void>;
   loadTree: (nameOrId: string | null) => Promise<void>;
   setTreeName: (rootName: string, treeName: string) => void;
@@ -221,6 +232,10 @@ export const useFamilyStore = create<FamilyState>()(
       relationMode: false,
       relationPickedIds: [],
       relationPath: null,
+
+      selectMode: false,
+      selectedIds: [],
+      moveTargetMode: false,
 
       _dirtyAfterExport: false,
       markExported: () => set({ _dirtyAfterExport: false }),
@@ -564,7 +579,7 @@ export const useFamilyStore = create<FamilyState>()(
 
       reset: () => {
         clearLocalData();
-        set({ persons: {}, selectedPersonId: null, siblingOrder: {}, spouseOrder: {}, relationMode: false, relationPickedIds: [], relationPath: null, currentTree: null, availableTrees: [], treeNames: {}, showTreeManager: false, _dirtyAfterExport: false });
+        set({ persons: {}, selectedPersonId: null, siblingOrder: {}, spouseOrder: {}, relationMode: false, relationPickedIds: [], relationPath: null, currentTree: null, availableTrees: [], treeNames: {}, showTreeManager: false, _dirtyAfterExport: false, selectMode: false, selectedIds: [], moveTargetMode: false });
       },
 
       toggleRelationMode: () => {
@@ -596,6 +611,155 @@ export const useFamilyStore = create<FamilyState>()(
         });
       },
 
+      toggleSelectMode: () => {
+        set((state) => ({
+          selectMode: !state.selectMode,
+          selectedIds: [] as string[],
+          moveTargetMode: false,
+          ...(state.selectMode ? {} : {
+            relationMode: false,
+            relationPickedIds: [] as FamilyState['relationPickedIds'],
+            relationPath: null as string[] | null,
+          }),
+        }));
+      },
+
+      toggleSelectPerson: (id) => {
+        set((state) => {
+          if (!state.selectMode) return state;
+          const idx = state.selectedIds.indexOf(id);
+          const next = idx >= 0
+            ? state.selectedIds.filter((sid) => sid !== id)
+            : [...state.selectedIds, id];
+          return { selectedIds: next };
+        });
+      },
+
+      setSelectedIds: (ids) => {
+        set({ selectedIds: ids });
+      },
+
+      clearSelection: () => {
+        set({ selectedIds: [], moveTargetMode: false });
+      },
+
+      removePersons: (ids) => {
+        set((state) => {
+          const idSet = new Set(ids);
+          const next = { ...state.persons };
+
+          for (const id of ids) {
+            const person = next[id];
+            if (!person) continue;
+
+            for (const spouseId of person.spouseIds) {
+              if (next[spouseId]) {
+                next[spouseId] = {
+                  ...next[spouseId],
+                  spouseIds: next[spouseId].spouseIds.filter((s) => s !== id),
+                };
+              }
+            }
+            for (const childId of person.childrenIds) {
+              if (next[childId]) {
+                next[childId] = {
+                  ...next[childId],
+                  parentIds: next[childId].parentIds.filter((p) => p !== id),
+                };
+              }
+            }
+            for (const parentId of person.parentIds) {
+              if (next[parentId]) {
+                next[parentId] = {
+                  ...next[parentId],
+                  childrenIds: next[parentId].childrenIds.filter((c) => c !== id),
+                };
+              }
+            }
+
+            delete next[id];
+          }
+
+          const selectedPersonId = idSet.has(state.selectedPersonId ?? '') ? null : state.selectedPersonId;
+          const update = {
+            persons: next,
+            selectedPersonId,
+            selectedIds: [] as string[],
+            selectMode: false,
+            moveTargetMode: false,
+          };
+          persistState({ ...state, ...update });
+          return update;
+        });
+      },
+
+      movePersonsToParent: (personIds, targetParentId) => {
+        set((state) => {
+          const next = { ...state.persons };
+          for (const key of Object.keys(next)) {
+            next[key] = { ...next[key] };
+          }
+
+          const targetParent = next[targetParentId];
+          if (!targetParent) return state;
+          const targetGen = targetParent.generation ?? 1;
+
+          for (const pid of personIds) {
+            const person = next[pid];
+            if (!person || pid === targetParentId) continue;
+
+            for (const oldParentId of person.parentIds) {
+              if (next[oldParentId]) {
+                next[oldParentId] = {
+                  ...next[oldParentId],
+                  childrenIds: next[oldParentId].childrenIds.filter((c) => c !== pid),
+                };
+              }
+            }
+
+            if (!next[targetParentId].childrenIds.includes(pid)) {
+              next[targetParentId] = {
+                ...next[targetParentId],
+                childrenIds: [...next[targetParentId].childrenIds, pid],
+              };
+            }
+
+            next[pid] = {
+              ...next[pid],
+              parentIds: [targetParentId],
+            };
+
+            const visited = new Set<string>();
+            syncGenerationWithSpouses(next, pid, targetGen + 1, visited);
+          }
+
+          let minGen = Infinity;
+          for (const p of Object.values(next)) {
+            if (p.generation < minGen) minGen = p.generation;
+          }
+          if (minGen < 1) {
+            const shift = 1 - minGen;
+            for (const key of Object.keys(next)) {
+              next[key] = { ...next[key], generation: next[key].generation + shift };
+            }
+          }
+
+          const update = {
+            persons: next,
+            selectedIds: [] as string[],
+            selectMode: false,
+            moveTargetMode: false,
+            anchorPersonId: personIds[0] ?? null,
+          };
+          persistState({ ...state, ...update });
+          return update;
+        });
+      },
+
+      setMoveTargetMode: (mode) => {
+        set({ moveTargetMode: mode });
+      },
+
       setTreeName: (rootName, treeName) => {
         set((state) => {
           const next = { ...state.treeNames, [rootName]: treeName };
@@ -603,6 +767,12 @@ export const useFamilyStore = create<FamilyState>()(
           persistState({ ...state, ...update });
           return update;
         });
+      },
+
+      fetchTrees: async () => {
+        const state = get();
+        const trees = deriveTreeList(state.persons, state.treeNames);
+        set({ availableTrees: trees });
       },
 
       loadSampleData: (data, treeNameMap) => {
@@ -666,12 +836,6 @@ export const useFamilyStore = create<FamilyState>()(
 
       setShowTreeManager: (show) => {
         set({ showTreeManager: show });
-      },
-
-      fetchTrees: async () => {
-        const state = get();
-        const trees = deriveTreeList(state.persons, state.treeNames);
-        set({ availableTrees: trees });
       },
 
       loadTree: async (nameOrId) => {

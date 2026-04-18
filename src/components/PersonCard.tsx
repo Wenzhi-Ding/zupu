@@ -20,6 +20,10 @@ interface Props {
   hasPath?: boolean;
   isOnPath?: boolean;
   isPathEnd?: boolean;
+  selectMode?: boolean;
+  isSelected?: boolean;
+  moveTargetMode?: boolean;
+  onMoveTargetPick?: (personId: string) => void;
 }
 
 export const PersonCard: React.FC<Props> = ({
@@ -37,6 +41,10 @@ export const PersonCard: React.FC<Props> = ({
   hasPath,
   isOnPath,
   isPathEnd,
+  selectMode,
+  isSelected,
+  moveTargetMode,
+  onMoveTargetPick,
 }) => {
   const { CARD_WIDTH, CARD_HEIGHT } = getLayoutConstants();
   const selectPerson = useFamilyStore((s) => s.selectPerson);
@@ -44,12 +52,14 @@ export const PersonCard: React.FC<Props> = ({
   const toggleCollapse = useFamilyStore((s) => s.toggleCollapse);
   const toggleParentCollapse = useFamilyStore((s) => s.toggleParentCollapse);
   const pickRelationNode = useFamilyStore((s) => s.pickRelationNode);
+  const toggleSelectPerson = useFamilyStore((s) => s.toggleSelectPerson);
 
-  const isSelected = selectedId === person.id;
+  const isSelectedCard = selectedId === person.id;
   const genderClass = person.gender === 'male' ? 'male' : person.gender === 'female' ? 'female' : '';
   const deceasedClass = person.deathYear ? 'deceased' : '';
   const pathClass = isOnPath ? (isPathEnd ? 'path-end' : 'on-path') : (isPathEnd ? 'path-end' : '');
   const dimClass = hasPath && !isOnPath && !isPathEnd ? 'relation-dim' : '';
+  const selectClass = selectMode && isSelected ? 'batch-selected' : '';
 
   const nameChars = [...person.name];
   const genderSymbol = person.gender === 'male' ? '♂' : person.gender === 'female' ? '♀' : '';
@@ -68,7 +78,7 @@ export const PersonCard: React.FC<Props> = ({
 
   return (
     <g
-      className={`person-card ${genderClass} ${deceasedClass} ${isSelected ? 'selected' : ''} ${isDragSource ? 'drag-source' : ''} ${pathClass} ${dimClass}`}
+      className={`person-card ${genderClass} ${deceasedClass} ${isSelectedCard ? 'selected' : ''} ${isDragSource ? 'drag-source' : ''} ${pathClass} ${dimClass} ${selectClass}`}
       transform={`translate(${x}, ${y})`}
     >
       <rect
@@ -78,6 +88,14 @@ export const PersonCard: React.FC<Props> = ({
         ry={8}
         className="card-bg"
         onClick={() => {
+          if (moveTargetMode) {
+            onMoveTargetPick?.(person.id);
+            return;
+          }
+          if (selectMode) {
+            toggleSelectPerson(person.id);
+            return;
+          }
           if (relationMode) {
             pickRelationNode(person.id);
           } else {
@@ -85,13 +103,13 @@ export const PersonCard: React.FC<Props> = ({
           }
         }}
         onMouseDown={(e) => {
-          if (relationMode) return;
+          if (selectMode || moveTargetMode || relationMode) return;
           if (e.button !== 0 || !onDragStart) return;
           e.stopPropagation();
           onDragStart(person.id, e.clientX, e.clientY);
         }}
         onTouchStart={(e) => {
-          if (relationMode) return;
+          if (selectMode || moveTargetMode || relationMode) return;
           if (!onDragStart) return;
           if (e.touches.length !== 1) return;
           e.stopPropagation();
@@ -128,7 +146,24 @@ export const PersonCard: React.FC<Props> = ({
         </text>
       )}
 
-      {!relationMode && (
+      {selectMode && (
+        <g className="card-select-check">
+          <circle
+            cx={14}
+            cy={14}
+            r={9}
+            className={isSelected ? 'check-circle checked' : 'check-circle'}
+          />
+          {isSelected && (
+            <polyline
+              points="9,14 12.5,17.5 19,10.5"
+              className="check-mark"
+            />
+          )}
+        </g>
+      )}
+
+      {!relationMode && !selectMode && (
         <g
           className="card-add-btn"
           onClick={(e) => {

@@ -14,6 +14,9 @@ export const Toolbar: React.FC = () => {
   const persons = useFamilyStore((s) => s.persons);
   const currentTree = useFamilyStore((s) => s.currentTree);
   const loadTree = useFamilyStore((s) => s.loadTree);
+  const selectMode = useFamilyStore((s) => s.selectMode);
+  const selectedIds = useFamilyStore((s) => s.selectedIds);
+  const toggleSelectMode = useFamilyStore((s) => s.toggleSelectMode);
 
   const [showNewPerson, setShowNewPerson] = useState(false);
   const [newName, setNewName] = useState('');
@@ -69,6 +72,15 @@ export const Toolbar: React.FC = () => {
           <button className="toolbar-btn active" onClick={toggleRelationMode}>
             退出关系查看
           </button>
+        ) : selectMode ? (
+          <>
+            <span className="select-mode-hint">
+              {selectedIds.length > 0 ? `已选 ${selectedIds.length} 人` : '点击或框选卡片'}
+            </span>
+            <button className="toolbar-btn active" onClick={toggleSelectMode}>
+              退出范围选择
+            </button>
+          </>
         ) : showNewPerson ? (
           <div className="inline-form">
             <input
@@ -93,6 +105,9 @@ export const Toolbar: React.FC = () => {
           <>
             <button className="toolbar-btn primary" onClick={() => setShowNewPerson(true)}>
               + 新建人物
+            </button>
+            <button className="toolbar-btn" onClick={toggleSelectMode}>
+              范围选择
             </button>
             <button className="toolbar-btn" onClick={toggleRelationMode}>
               展示关系

@@ -42,6 +42,14 @@ export const FamilyTree: React.FC = () => {
   const relationMode = useFamilyStore((s) => s.relationMode);
   const relationPath = useFamilyStore((s) => s.relationPath);
   const relationPickedIds = useFamilyStore((s) => s.relationPickedIds);
+  const selectMode = useFamilyStore((s) => s.selectMode);
+  const selectedIds = useFamilyStore((s) => s.selectedIds);
+  const moveTargetMode = useFamilyStore((s) => s.moveTargetMode);
+  const setSelectedIds = useFamilyStore((s) => s.setSelectedIds);
+  const clearSelection = useFamilyStore((s) => s.clearSelection);
+  const removePersons = useFamilyStore((s) => s.removePersons);
+  const movePersonsToParent = useFamilyStore((s) => s.movePersonsToParent);
+  const setMoveTargetMode = useFamilyStore((s) => s.setMoveTargetMode);
   const [addingForPersonId, setAddingForPersonId] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -58,6 +66,11 @@ export const FamilyTree: React.FC = () => {
   const pinchRef = useRef<PinchState | null>(null);
   const touchPanStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const isTouchPanning = useRef(false);
+
+  const [rubberBand, setRubberBand] = useState<{ sx: number; sy: number; ex: number; ey: number } | null>(null);
+  const rubberBandRef = useRef<{ sx: number; sy: number; ex: number; ey: number } | null>(null);
+  const rubberBandStartRef = useRef<{ x: number; y: number } | null>(null);
+  const selectedIdsSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const prevPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
   const skipAnchorRef = useRef(false);
@@ -257,14 +270,31 @@ export const FamilyTree: React.FC = () => {
     (e: React.MouseEvent) => {
       if (e.button !== 0) return;
       if (dragRef.current) return;
+      if (selectMode && !moveTargetMode) {
+        const svgPos = clientToSvg(e.clientX, e.clientY);
+        rubberBandStartRef.current = svgPos;
+        const rb = { sx: svgPos.x, sy: svgPos.y, ex: svgPos.x, ey: svgPos.y };
+        rubberBandRef.current = rb;
+        setRubberBand(rb);
+        return;
+      }
       setIsPanning(true);
       panStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
     },
-    [pan]
+    [pan, selectMode, moveTargetMode, clientToSvg]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
+      if (rubberBandStartRef.current && !dragRef.current) {
+        const svgPos = clientToSvg(e.clientX, e.clientY);
+        setRubberBand((prev) => {
+          const next = prev ? { ...prev, ex: svgPos.x, ey: svgPos.y } : null;
+          rubberBandRef.current = next;
+          return next;
+        });
+        return;
+      }
       if (dragRef.current) {
         const dx = e.clientX - dragRef.current.startClientX;
         const dy = e.clientY - dragRef.current.startClientY;
@@ -487,6 +517,38 @@ export const FamilyTree: React.FC = () => {
 
   useEffect(() => {
     const handler = () => {
+      if (rubberBandStartRef.current) {
+        const rb = rubberBandRef.current;
+        if (rb) {
+          const dx = Math.abs(rb.ex - rb.sx);
+          const dy = Math.abs(rb.ey - rb.sy);
+          if (dx > 5 || dy > 5) {
+            const minX = Math.min(rb.sx, rb.ex);
+            const maxX = Math.max(rb.sx, rb.ex);
+            const minY = Math.min(rb.sy, rb.ey);
+            const maxY = Math.max(rb.sy, rb.ey);
+
+            const currentIds = useFamilyStore.getState().selectedIds;
+            const newIds = new Set(currentIds);
+            layout.units.forEach((unit) => {
+              const pos = layout.positions.get(unit.id);
+              if (!pos) return;
+              const orderedIds = computeUnitPersonOrder(unit.personId, unit.spouseIds, persons, spouseOrder);
+              orderedIds.forEach((pid, idx) => {
+                const px = pos.x + idx * (CARD_WIDTH + COUPLE_GAP);
+                const py = pos.y;
+                if (px + CARD_WIDTH >= minX && px <= maxX && py + CARD_HEIGHT >= minY && py <= maxY) {
+                  newIds.add(pid);
+                }
+              });
+            });
+            setSelectedIds(Array.from(newIds));
+          }
+        }
+        rubberBandStartRef.current = null;
+        rubberBandRef.current = null;
+        setRubberBand(null);
+      }
       if (dragRef.current?.isDragging) {
         if (dragRef.current.mode === 'generation-drag') {
           commitGenerationDrag(dragRef.current);
@@ -500,7 +562,7 @@ export const FamilyTree: React.FC = () => {
     };
     window.addEventListener('mouseup', handler);
     return () => window.removeEventListener('mouseup', handler);
-  }, [commitDragOrder, commitGenerationDrag]);
+  }, [commitDragOrder, commitGenerationDrag, layout, persons, spouseOrder, CARD_WIDTH, CARD_HEIGHT, COUPLE_GAP, setSelectedIds]);
 
   const connectors: React.ReactNode[] = [];
 
@@ -689,6 +751,12 @@ export const FamilyTree: React.FC = () => {
           hasPath={!!showPath}
           isOnPath={showPath ? pathSet.has(person.id) : false}
           isPathEnd={pathEndSet.has(person.id)}
+          selectMode={selectMode}
+          isSelected={selectedIdsSet.has(person.id)}
+          moveTargetMode={moveTargetMode}
+          onMoveTargetPick={(targetId) => {
+            movePersonsToParent(selectedIds, targetId);
+          }}
         />
       );
     });
@@ -698,7 +766,7 @@ export const FamilyTree: React.FC = () => {
     <div className="family-tree-container">
       <svg
         ref={svgRef}
-        className={`family-tree-svg ${dragRender?.isDragging ? 'is-dragging' : ''}`}
+        className={`family-tree-svg ${dragRender?.isDragging ? 'is-dragging' : ''} ${selectMode ? 'select-mode' : ''}`}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -743,6 +811,21 @@ export const FamilyTree: React.FC = () => {
             return highlightLines;
           })()}
           {cards}
+          {rubberBand && (() => {
+            const rx = Math.min(rubberBand.sx, rubberBand.ex);
+            const ry = Math.min(rubberBand.sy, rubberBand.ey);
+            const rw = Math.abs(rubberBand.ex - rubberBand.sx);
+            const rh = Math.abs(rubberBand.ey - rubberBand.sy);
+            return (
+              <rect
+                x={rx}
+                y={ry}
+                width={rw}
+                height={rh}
+                className="rubber-band-rect"
+              />
+            );
+          })()}
           {dragRender?.isDragging && dragRender.mode === 'generation-drag' && (() => {
             const rowHeight = CARD_HEIGHT + V_GAP;
             const draggedCenterY = dragRender.currentSvgY + CARD_HEIGHT / 2;
@@ -863,6 +946,39 @@ export const FamilyTree: React.FC = () => {
 
       {relationPath && relationPath.length >= 2 && (
         <RelationshipChain persons={persons} path={relationPath} />
+      )}
+
+      {selectMode && selectedIds.length > 0 && (
+        <div className="select-action-bar">
+          <span className="select-count">已选择 {selectedIds.length} 人</span>
+          <button
+            className="select-action-btn danger"
+            onClick={() => {
+              if (window.confirm(`确定要删除 ${selectedIds.length} 人吗？`)) {
+                removePersons(selectedIds);
+              }
+            }}
+          >
+            删除
+          </button>
+          <button
+            className="select-action-btn primary"
+            onClick={() => setMoveTargetMode(true)}
+            disabled={moveTargetMode}
+          >
+            {moveTargetMode ? '请点击目标人物…' : '移动到…'}
+          </button>
+          <button
+            className="select-action-btn"
+            onClick={clearSelection}
+          >
+            取消选择
+          </button>
+        </div>
+      )}
+
+      {moveTargetMode && (
+        <div className="select-hint-bar">点击目标人物，所选人员将成为其子女</div>
       )}
     </div>
   );
