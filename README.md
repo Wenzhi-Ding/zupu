@@ -58,8 +58,8 @@ A visual, interactive family tree editor that runs entirely in your browser. All
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/genealogy-public.git
-cd genealogy-public
+git clone https://github.com/Wenzhi-Ding/zupu.git
+cd zupu
 
 # Install dependencies
 npm install
