@@ -39,8 +39,9 @@ export const DataManager = () => {
     reader.onload = () => {
       try {
         const data = importData(reader.result as string);
+        const importState = { ...data, currentTree: null as string | null };
         useFamilyStore.setState({
-          ...data,
+          ...importState,
           _hydrated: true,
           _dirtyAfterExport: false,
           availableTrees: [],
@@ -50,7 +51,7 @@ export const DataManager = () => {
           relationPath: null,
           showTreeManager: false,
         });
-        saveLocalDataImmediate(data);
+        saveLocalDataImmediate(importState);
         useFamilyStore.getState().fetchTrees();
       } catch {
         alert('导入失败：文件格式不正确');

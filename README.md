@@ -26,6 +26,13 @@ A visual, interactive family tree editor that runs entirely in your browser. All
 - Select any two people to automatically discover and display the relationship chain between them
 - Highlights the connection path across generations (e.g. grandfather → father → son)
 
+### Batch Selection & Operations
+
+- Enter selection mode to pick multiple people by clicking or rubber-band dragging
+- Batch delete selected people
+- Move selected people under a new parent node (reassigns parent-child relationships)
+- Visual checkboxes and blue highlight for selected cards
+
 ### Tree Management
 
 - Manage multiple family trees with named tree roots
@@ -38,7 +45,7 @@ A visual, interactive family tree editor that runs entirely in your browser. All
 ### Data Import & Export
 
 - Export your entire family tree as a JSON file for backup or sharing
-- Import JSON files to restore or merge data
+- Import JSON files to restore data (replaces all current data and resets the tree filter view)
 - All data persisted in browser `localStorage` — survives page refreshes and browser restarts
 
 ### Privacy First
@@ -79,8 +86,8 @@ Open [http://localhost:5173](http://localhost:5173) in your browser. Click **族
 ```
 src/
 ├── components/        # React UI components
-│   ├── FamilyTree     # Main SVG canvas with pan/zoom/drag
-│   ├── PersonCard     # Individual person node in the tree
+│   ├── FamilyTree     # Main SVG canvas with pan/zoom/drag/rubber-band selection
+│   ├── PersonCard     # Individual person node in the tree (with selection checkbox)
 │   ├── Sidebar        # Person detail panel & relation editing
 │   ├── TreeManager    # Multi-tree management dialog
 │   ├── RelationshipChain  # Relationship path display
