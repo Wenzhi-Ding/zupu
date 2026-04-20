@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useFamilyStore } from '../store/familyStore';
-import { SAMPLE_TREES, getSampleTrees } from '../data/sampleTrees';
+import { getSampleTrees } from '../data/sampleTrees';
 import type { Gender } from '../types';
 import { useT } from '../i18n';
 import './TreeManager.css';

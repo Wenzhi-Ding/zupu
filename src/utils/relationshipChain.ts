@@ -1,5 +1,5 @@
 import type { Person, Gender } from '../types';
-import { t, isEnglish } from '../i18n';
+import { t } from '../i18n';
 
 export type EdgeDirection = 'parent' | 'child' | 'spouse';
 

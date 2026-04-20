@@ -19,7 +19,7 @@ function renderEdge(edge: ChainEdge) {
   );
 }
 
-function renderNode(node: ChainNode, t: (key: string) => string, onClick?: () => void) {
+function renderNode(node: ChainNode, t: (key: any, params?: Record<string, string | number>) => string, onClick?: () => void) {
   return (
     <span
       className={`chain-node ${node.collapsible ? 'collapsible' : ''}`}

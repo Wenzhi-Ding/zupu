@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFamilyStore } from '../store/familyStore';
-import { useT, useI18n } from '../i18n';
+import { useT } from '../i18n';
 import type { Gender } from '../types';
 import './Toolbar.css';
 
