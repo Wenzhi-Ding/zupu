@@ -1,4 +1,5 @@
 import type { Person, Gender } from '../types';
+import { t, isEnglish } from '../i18n';
 
 export type EdgeDirection = 'parent' | 'child' | 'spouse';
 
@@ -60,21 +61,21 @@ function singleEdgeLabel(
   if (!from || !to) return '?';
 
   if (direction === 'spouse') {
-    if (from.gender === 'male') return '丈夫';
-    if (from.gender === 'female') return '妻子';
-    return '配偶';
+    if (from.gender === 'male') return t('relHusband');
+    if (from.gender === 'female') return t('relWife');
+    return t('relSpouse');
   }
 
   if (direction === 'parent') {
-    if (from.gender === 'male') return '父亲';
-    if (from.gender === 'female') return '母亲';
-    return '父亲/母亲';
+    if (from.gender === 'male') return t('relFather');
+    if (from.gender === 'female') return t('relMother');
+    return t('relFatherOrMother');
   }
 
   if (direction === 'child') {
-    if (from.gender === 'male') return '儿子';
-    if (from.gender === 'female') return '女儿';
-    return '儿子/女儿';
+    if (from.gender === 'male') return t('relSon');
+    if (from.gender === 'female') return t('relDaughter');
+    return t('relSonOrDaughter');
   }
 
   return '?';
@@ -248,7 +249,7 @@ export function composeRelationshipLabel(
     }
   }
 
-  return '非亲戚';
+  return t('relNonRelative');
 }
 
 type StepCode = 'U' | 'D' | 'S';
@@ -291,35 +292,35 @@ function matchUpDown(pattern: string, minU: number, minD: number): { uCount: num
   return null;
 }
 
-function genderLabel(g: Gender, male: string, female: string, unknown?: string): string {
-  if (g === 'male') return male;
-  if (g === 'female') return female;
-  return unknown ?? `${male}/${female}`;
+function genderLabel(g: Gender, maleKey: string, femaleKey: string, unknownKey?: string): string {
+  if (g === 'male') return t(maleKey as any);
+  if (g === 'female') return t(femaleKey as any);
+  return unknownKey ? t(unknownKey as any) : `${t(maleKey as any)}/${t(femaleKey as any)}`;
 }
 
 function siblingLabel(sg: Gender, eg: Gender, startPerson: Person, endPerson: Person): string {
   const older = compareAge(startPerson, endPerson);
   if (sg === 'male' && eg === 'male') {
-    if (older === 'older') return '哥哥';
-    if (older === 'younger') return '弟弟';
-    return '哥哥/弟弟';
+    if (older === 'older') return t('relOlderBrother');
+    if (older === 'younger') return t('relYoungerBrother');
+    return t('relBrother');
   }
   if (sg === 'male' && eg === 'female') {
-    if (older === 'older') return '哥哥';
-    if (older === 'younger') return '弟弟';
-    return '哥哥/弟弟';
+    if (older === 'older') return t('relOlderBrother');
+    if (older === 'younger') return t('relYoungerBrother');
+    return t('relBrother');
   }
   if (sg === 'female' && eg === 'male') {
-    if (older === 'older') return '姐姐';
-    if (older === 'younger') return '妹妹';
-    return '姐姐/妹妹';
+    if (older === 'older') return t('relOlderSister');
+    if (older === 'younger') return t('relYoungerSister');
+    return t('relSister');
   }
   if (sg === 'female' && eg === 'female') {
-    if (older === 'older') return '姐姐';
-    if (older === 'younger') return '妹妹';
-    return '姐姐/妹妹';
+    if (older === 'older') return t('relOlderSister');
+    if (older === 'younger') return t('relYoungerSister');
+    return t('relSister');
   }
-  return '兄弟姐妹';
+  return t('relSiblings');
 }
 
 function compareAge(a: Person, b: Person): 'older' | 'younger' | 'unknown' {
@@ -367,19 +368,19 @@ const KINSHIP_RULES: KinshipRule[] = [
   // === Direct: U (child→parent, start is child of end) ===
   {
     match: exactMatch('U'),
-    emit: ({ sg }) => genderLabel(sg, '儿子', '女儿'),
+    emit: ({ sg }) => genderLabel(sg, 'relSon', 'relDaughter'),
   },
 
   // === Direct: D (parent→child, start is parent of end) ===
   {
     match: exactMatch('D'),
-    emit: ({ sg }) => genderLabel(sg, '父亲', '母亲'),
+    emit: ({ sg }) => genderLabel(sg, 'relFather', 'relMother'),
   },
 
   // === Direct: S (spouse) ===
   {
     match: exactMatch('S'),
-    emit: ({ sg }) => genderLabel(sg, '丈夫', '妻子', '配偶'),
+    emit: ({ sg }) => genderLabel(sg, 'relHusband', 'relWife', 'relSpouse'),
   },
 
   // === Grandchild: UU, UUS (start is grandchild of end/end's spouse) ===
@@ -387,8 +388,8 @@ const KINSHIP_RULES: KinshipRule[] = [
     match: exactMatch('UU', 'UUS'),
     emit: (ctx) => {
       const pg = firstParentGender(ctx.steps, ctx.persons);
-      if (pg === 'male') return genderLabel(ctx.sg, '孙子', '孙女');
-      return genderLabel(ctx.sg, '外孙', '外孙女');
+      if (pg === 'male') return genderLabel(ctx.sg, 'relGrandson', 'relGranddaughter');
+      return genderLabel(ctx.sg, 'relMaternalGrandson', 'relMaternalGranddaughter');
     },
   },
 
@@ -400,21 +401,21 @@ const KINSHIP_RULES: KinshipRule[] = [
       const firstChildId = dSteps[0]?.toId;
       const firstChild = firstChildId ? ctx.persons[firstChildId] : undefined;
       const childGender = firstChild?.gender ?? 'unknown';
-      if (childGender === 'male') return genderLabel(ctx.sg, '爷爷', '奶奶');
-      return genderLabel(ctx.sg, '外公', '外婆');
+      if (childGender === 'male') return genderLabel(ctx.sg, 'relGrandpa', 'relGrandma');
+      return genderLabel(ctx.sg, 'relMaternalGrandpa', 'relMaternalGrandma');
     },
   },
 
   // === Great-grandchild: UUU, UUUS ===
   {
     match: exactMatch('UUU', 'UUUS'),
-    emit: ({ sg }) => genderLabel(sg, '曾孙', '曾孙女'),
+    emit: ({ sg }) => genderLabel(sg, 'relGreatGrandson', 'relGreatGranddaughter'),
   },
 
   // === Great-grandparent: DDD, SDDD ===
   {
     match: exactMatch('DDD', 'SDDD'),
-    emit: ({ sg }) => genderLabel(sg, '曾祖父', '曾祖母'),
+    emit: ({ sg }) => genderLabel(sg, 'relGreatGrandfather', 'relGreatGrandmother'),
   },
 
   // === Siblings: UD ===
@@ -426,13 +427,13 @@ const KINSHIP_RULES: KinshipRule[] = [
   // === Parent's spouse (step-parent ≈ parent): US ===
   {
     match: exactMatch('US'),
-    emit: ({ sg }) => genderLabel(sg, '儿子', '女儿'),
+    emit: ({ sg }) => genderLabel(sg, 'relSon', 'relDaughter'),
   },
 
   // === Spouse's child (step-child ≈ child): SD ===
   {
     match: exactMatch('SD'),
-    emit: ({ sg }) => genderLabel(sg, '父亲', '母亲', '父亲/母亲'),
+    emit: ({ sg }) => genderLabel(sg, 'relFather', 'relMother', 'relFatherOrMother'),
   },
 
   // === Uncle/Aunt (start goes up 2, down 1): UUD ===
@@ -440,8 +441,8 @@ const KINSHIP_RULES: KinshipRule[] = [
     match: exactMatch('UUD'),
     emit: (ctx) => {
       const pg = firstParentGender(ctx.steps, ctx.persons);
-      if (pg === 'male') return genderLabel(ctx.sg, '侄子', '侄女');
-      return genderLabel(ctx.sg, '外甥', '外甥女');
+      if (pg === 'male') return genderLabel(ctx.sg, 'relNephew', 'relNiece');
+      return genderLabel(ctx.sg, 'relMaternalNephew', 'relMaternalNiece');
     },
   },
 
@@ -455,26 +456,26 @@ const KINSHIP_RULES: KinshipRule[] = [
       const endParentGender = endParent?.gender ?? 'unknown';
 
       if (endParentGender === 'male') {
-        if (ctx.sg === 'female') return '姑姑';
+        if (ctx.sg === 'female') return t('relAuntPaternal');
         if (ctx.sg === 'male') {
           const older = compareAge(ctx.startPerson, endParent!);
-          if (older === 'older') return '伯父';
-          if (older === 'younger') return '叔叔';
-          return '伯父/叔叔';
+          if (older === 'older') return t('relUnclePaternalOlder');
+          if (older === 'younger') return t('relUnclePaternalYounger');
+          return t('relUnclePaternal');
         }
-        return '伯父/叔叔/姑姑';
+        return `${t('relUnclePaternal')}/${t('relAuntPaternal')}`;
       }
       if (endParentGender === 'female') {
-        if (ctx.sg === 'male') return '舅舅';
+        if (ctx.sg === 'male') return t('relUncleMaternal');
         if (ctx.sg === 'female') {
           const older = compareAge(ctx.startPerson, endParent!);
-          if (older === 'older') return '大姨';
-          if (older === 'younger') return '小姨';
-          return '大姨/小姨';
+          if (older === 'older') return t('relAuntMaternalOlder');
+          if (older === 'younger') return t('relAuntMaternalYounger');
+          return t('relAuntMaternal');
         }
-        return '舅舅/姨妈';
+        return `${t('relUncleMaternal')}/${t('relAuntMaternal')}`;
       }
-      return '叔伯/舅/姑/姨';
+      return t('relUncleAuntGeneral');
     },
   },
 
@@ -484,7 +485,7 @@ const KINSHIP_RULES: KinshipRule[] = [
     emit: (ctx) => {
       const { upSteps, downSteps } = splitUpDown(ctx.steps);
       const tang = isTangRelation(upSteps, downSteps, ctx.persons);
-      const prefix = tang ? '堂' : '表';
+      const prefix = tang ? t('relTang') : t('relBiao');
       return prefix + siblingLabel(ctx.sg, ctx.eg, ctx.startPerson, ctx.endPerson);
     },
   },
@@ -498,15 +499,15 @@ const KINSHIP_RULES: KinshipRule[] = [
     emit: (ctx) => {
       const { upSteps, downSteps } = splitUpDown(ctx.steps);
       const tang = isTangRelation(upSteps, downSteps, ctx.persons);
-      const prefix = tang ? '堂' : '表';
-      if (ctx.eg === 'female') return `${prefix}姑姑`;
+      const prefix = tang ? t('relTang') : t('relBiao');
+      if (ctx.eg === 'female') return `${prefix}${t('relAuntPaternal')}`;
       const older = compareAge(ctx.endPerson, ctx.startPerson);
       if (ctx.eg === 'male') {
-        if (older === 'older') return `${prefix}伯父`;
-        if (older === 'younger') return `${prefix}叔叔`;
-        return `${prefix}伯父/${prefix}叔叔`;
+        if (older === 'older') return `${prefix}${t('relUnclePaternalOlder')}`;
+        if (older === 'younger') return `${prefix}${t('relUnclePaternalYounger')}`;
+        return `${prefix}${t('relUnclePaternalOlder')}/${prefix}${t('relUnclePaternalYounger')}`;
       }
-      return `${prefix}伯父/${prefix}叔叔/${prefix}姑姑`;
+      return `${prefix}${t('relUnclePaternalOlder')}/${prefix}${t('relUnclePaternalYounger')}/${prefix}${t('relAuntPaternal')}`;
     },
   },
 
@@ -519,8 +520,8 @@ const KINSHIP_RULES: KinshipRule[] = [
     emit: (ctx) => {
       const { upSteps, downSteps } = splitUpDown(ctx.steps);
       const tang = isTangRelation(upSteps, downSteps, ctx.persons);
-      const prefix = tang ? '堂' : '表';
-      return prefix + genderLabel(ctx.sg, '侄子', '侄女');
+      const prefix = tang ? t('relTang') : t('relBiao');
+      return prefix + genderLabel(ctx.sg, 'relNephew', 'relNiece');
     },
   },
 
@@ -528,9 +529,9 @@ const KINSHIP_RULES: KinshipRule[] = [
   {
     match: exactMatch('SU'),
     emit: (ctx) => {
-      if (ctx.eg === 'male') return genderLabel(ctx.sg, '女婿', '儿媳');
-      if (ctx.eg === 'female') return genderLabel(ctx.sg, '女婿', '儿媳');
-      return genderLabel(ctx.sg, '女婿', '儿媳');
+      if (ctx.eg === 'male') return genderLabel(ctx.sg, 'relSonInLaw', 'relDaughterInLaw');
+      if (ctx.eg === 'female') return genderLabel(ctx.sg, 'relSonInLaw', 'relDaughterInLaw');
+      return genderLabel(ctx.sg, 'relSonInLaw', 'relDaughterInLaw');
     },
   },
 
@@ -543,9 +544,9 @@ const KINSHIP_RULES: KinshipRule[] = [
       const child = childId ? ctx.persons[childId] : undefined;
       const childGender = child?.gender ?? 'unknown';
 
-      if (childGender === 'male') return genderLabel(ctx.sg, '公公', '婆婆');
-      if (childGender === 'female') return genderLabel(ctx.sg, '岳父', '岳母');
-      return genderLabel(ctx.sg, '公公/岳父', '婆婆/岳母');
+      if (childGender === 'male') return genderLabel(ctx.sg, 'relFatherInLawHusbandSide', 'relMotherInLawHusbandSide');
+      if (childGender === 'female') return genderLabel(ctx.sg, 'relFatherInLawWifeSide', 'relMotherInLawWifeSide');
+      return genderLabel(ctx.sg, 'relParentsInLaw', 'relMothersInLaw');
     },
   },
 
@@ -557,9 +558,11 @@ const KINSHIP_RULES: KinshipRule[] = [
       const firstChildId = dSteps[0]?.toId;
       const firstChild = firstChildId ? ctx.persons[firstChildId] : undefined;
       const childGender = firstChild?.gender ?? 'unknown';
-      if (childGender === 'male') return genderLabel(ctx.sg, '爷爷', '奶奶');
-      if (childGender === 'female') return genderLabel(ctx.sg, '外公', '外婆');
-      return genderLabel(ctx.sg, '爷爷/外公', '奶奶/外婆');
+      if (childGender === 'male') return genderLabel(ctx.sg, 'relGrandpa', 'relGrandma');
+      if (childGender === 'female') return genderLabel(ctx.sg, 'relMaternalGrandpa', 'relMaternalGrandma');
+      if (ctx.sg === 'male') return `${t('relGrandpa')}/${t('relMaternalGrandpa')}`;
+      if (ctx.sg === 'female') return `${t('relGrandma')}/${t('relMaternalGrandma')}`;
+      return `${t('relGrandpa')}/${t('relMaternalGrandpa')}/${t('relGrandma')}/${t('relMaternalGrandma')}`;
     },
   },
 
@@ -570,9 +573,9 @@ const KINSHIP_RULES: KinshipRule[] = [
       const spouseStep = ctx.steps[0];
       const spouseId = spouseStep.toId;
       const spouse = spouseId ? ctx.persons[spouseId] : undefined;
-      if (spouse?.gender === 'male') return genderLabel(ctx.sg, '孙女婿', '孙媳妇');
-      if (spouse?.gender === 'female') return genderLabel(ctx.sg, '孙女婿', '孙媳妇');
-      return genderLabel(ctx.sg, '孙女婿', '孙媳妇');
+      if (spouse?.gender === 'male') return genderLabel(ctx.sg, 'relGrandsonInLaw', 'relGranddaughterInLaw');
+      if (spouse?.gender === 'female') return genderLabel(ctx.sg, 'relGrandsonInLaw', 'relGranddaughterInLaw');
+      return genderLabel(ctx.sg, 'relGrandsonInLaw', 'relGranddaughterInLaw');
     },
   },
 
@@ -588,16 +591,16 @@ const KINSHIP_RULES: KinshipRule[] = [
       if (spouseGender === 'male') {
         if (ctx.eg === 'male') {
           const older = compareAge(ctx.endPerson, spouse!);
-          if (older === 'younger') return '小叔子';
-          return '小叔子';
+          if (older === 'younger') return t('relBrotherInLawHusbandsYounger');
+          return t('relBrotherInLawHusbandsYounger');
         }
-        return '小姑子';
+        return t('relSisterInLawHusbandsSide');
       }
       if (spouseGender === 'female') {
-        if (ctx.eg === 'male') return '小舅子';
-        return '小姨子';
+        if (ctx.eg === 'male') return t('relBrotherInLawWifesSide');
+        return t('relSisterInLawWifesSide');
       }
-      return '小叔子/小舅子';
+      return `${t('relBrotherInLawHusbandsYounger')}/${t('relBrotherInLawWifesSide')}`;
     },
   },
 
@@ -612,42 +615,37 @@ const KINSHIP_RULES: KinshipRule[] = [
 
       if (sibGender === 'male') {
         const older = compareAge(sibling!, ctx.startPerson);
-        if (older === 'older') return '嫂子';
-        if (older === 'younger') return '弟妹';
-        return '嫂子/弟妹';
+        if (older === 'older') return t('relSisterInLawOlder');
+        if (older === 'younger') return t('relSisterInLawYounger');
+        return t('relSisterInLawGeneral');
       }
       if (sibGender === 'female') {
         const older = compareAge(sibling!, ctx.startPerson);
-        if (older === 'older') return '姐夫';
-        if (older === 'younger') return '妹夫';
-        return '姐夫/妹夫';
+        if (older === 'older') return t('relBrotherInLawOlderSister');
+        if (older === 'younger') return t('relBrotherInLawYoungerSister');
+        return t('relBrotherInLawGeneral2');
       }
-      return '姐夫/妹夫/嫂子/弟妹';
+      return t('relAllInLawSiblings');
     },
   },
 
   // === Nephew/niece's spouse → uncle/aunt: SUUD ===
-  // Start person is the spouse of a nephew/niece of end person.
-  // 媳妇 if start is female, 女婿 if start is male.
-  // 侄 if nephew/niece's parent is male (end's brother), 外甥 if female (end's sister).
   {
     match: exactMatch('SUUD'),
     emit: (ctx) => {
-      // steps: S(start→nephew), U(nephew→parent), U(parent→grandparent), D(grandparent→end)
-      // The nephew/niece's parent gender determines 侄 vs 外甥
       const upSteps = ctx.steps.filter(s => s.dir === 'child');
       const firstParent = upSteps[0] ? ctx.persons[upSteps[0].toId] : undefined;
       const parentGender = firstParent?.gender ?? 'unknown';
-      // Start person's gender determines 媳妇 vs 女婿
-      const suffix = ctx.sg === 'male' ? '女婿' : '媳妇';
 
       if (parentGender === 'male') {
-        return `侄${suffix}`;
+        return ctx.sg === 'male' ? t('relNephewHusband') : t('relNephewWife');
       }
       if (parentGender === 'female') {
-        return `外甥${suffix}`;
+        return ctx.sg === 'male' ? t('relMaternalNephewHusband') : t('relMaternalNephewWife');
       }
-      return `侄${suffix}/外甥${suffix}`;
+      return ctx.sg === 'male'
+        ? `${t('relNephewHusband')}/${t('relMaternalNephewHusband')}`
+        : `${t('relNephewWife')}/${t('relMaternalNephewWife')}`;
     },
   },
 
@@ -661,26 +659,26 @@ const KINSHIP_RULES: KinshipRule[] = [
       const endParentGender = endParent?.gender ?? 'unknown';
 
       if (endParentGender === 'male') {
-        if (ctx.sg === 'female') return '姑姑';
+        if (ctx.sg === 'female') return t('relAuntPaternal');
         if (ctx.sg === 'male') {
           const older = compareAge(ctx.startPerson, endParent!);
-          if (older === 'older') return '伯父';
-          if (older === 'younger') return '叔叔';
-          return '伯父/叔叔';
+          if (older === 'older') return t('relUnclePaternalOlder');
+          if (older === 'younger') return t('relUnclePaternalYounger');
+          return t('relUnclePaternal');
         }
-        return '伯父/叔叔/姑姑';
+        return `${t('relUnclePaternal')}/${t('relAuntPaternal')}`;
       }
       if (endParentGender === 'female') {
-        if (ctx.sg === 'male') return '舅舅';
+        if (ctx.sg === 'male') return t('relUncleMaternal');
         if (ctx.sg === 'female') {
           const older = compareAge(ctx.startPerson, endParent!);
-          if (older === 'older') return '大姨';
-          if (older === 'younger') return '小姨';
-          return '大姨/小姨';
+          if (older === 'older') return t('relAuntMaternalOlder');
+          if (older === 'younger') return t('relAuntMaternalYounger');
+          return t('relAuntMaternal');
         }
-        return '舅舅/姨妈';
+        return `${t('relUncleMaternal')}/${t('relAuntMaternal')}`;
       }
-      return '叔伯/舅/姑/姨';
+      return t('relUncleAuntGeneral');
     },
   },
 
@@ -691,8 +689,8 @@ const KINSHIP_RULES: KinshipRule[] = [
       const upSteps = ctx.steps.filter(s => s.dir === 'child');
       const pg = upSteps[0] ? ctx.persons[upSteps[0].toId]?.gender : 'unknown';
 
-      if (pg === 'male') return genderLabel(ctx.sg, '侄子', '侄女');
-      return genderLabel(ctx.sg, '外甥', '外甥女');
+      if (pg === 'male') return genderLabel(ctx.sg, 'relNephew', 'relNiece');
+      return genderLabel(ctx.sg, 'relMaternalNephew', 'relMaternalNiece');
     },
   },
 
@@ -709,21 +707,21 @@ const KINSHIP_RULES: KinshipRule[] = [
       const sibGender = sibling?.gender ?? 'unknown';
 
       if (sibGender === 'male') {
-        if (spouseGender === 'female') return '姑父';
+        if (spouseGender === 'female') return t('relAuntHusbandPaternal');
         if (spouseGender === 'male') {
           const older = compareAge(spouse!, sibling!);
-          if (older === 'older') return '伯母';
-          if (older === 'younger') return '婶婶';
-          return '伯母/婶婶';
+          if (older === 'older') return t('relUncleWifeOlder');
+          if (older === 'younger') return t('relUncleWifeYounger');
+          return t('relUncleWife');
         }
-        return '伯母/婶婶/姑父';
+        return `${t('relUncleWife')}/${t('relAuntHusbandPaternal')}`;
       }
       if (sibGender === 'female') {
-        if (spouseGender === 'male') return '姨父';
-        if (spouseGender === 'female') return '舅母';
-        return '舅母/姨父';
+        if (spouseGender === 'male') return t('relAuntHusbandMaternal');
+        if (spouseGender === 'female') return t('relUncleWifeMaternal');
+        return `${t('relUncleWifeMaternal')}/${t('relAuntHusbandMaternal')}`;
       }
-      return '伯母/婶婶/舅母/姑父/姨父';
+      return t('relAllUncleAuntInLaw');
     },
   },
 
@@ -731,9 +729,9 @@ const KINSHIP_RULES: KinshipRule[] = [
   {
     match: exactMatch('SUDS'),
     emit: (ctx) => {
-      if (ctx.sg === 'female' && ctx.eg === 'female') return '妯娌';
-      if (ctx.sg === 'male' && ctx.eg === 'male') return '连襟';
-      return '妯娌/连襟';
+      if (ctx.sg === 'female' && ctx.eg === 'female') return t('relSisterInLaw');
+      if (ctx.sg === 'male' && ctx.eg === 'male') return t('relBrotherInLaw');
+      return t('relSisterInLawGeneral3');
     },
   },
 
@@ -744,28 +742,28 @@ const KINSHIP_RULES: KinshipRule[] = [
       const coreSteps = ctx.steps.filter(s => s.dir !== 'spouse');
       const { upSteps, downSteps } = splitUpDown(coreSteps);
       const tang = isTangRelation(upSteps, downSteps, ctx.persons);
-      const prefix = tang ? '堂' : '表';
+      const prefix = tang ? t('relTang') : t('relBiao');
 
       const pattern = ctx.steps.map(s => stepCode(s.dir)).join('');
       if (pattern === 'UUDDS') {
-        // start is cousin of end's spouse → start is 小叔子/小姑子/小舅子/小姨子 of end
+        // start is cousin of end's spouse
         const spouseStep = ctx.steps[ctx.steps.length - 1];
         const cousinId = spouseStep.fromId;
         const cousin = ctx.persons[cousinId];
         const cousinGender = cousin?.gender ?? 'unknown';
 
         if (cousinGender === 'male') {
-          if (ctx.sg === 'male') return `${prefix}小叔子`;
-          return `${prefix}小姑子`;
+          if (ctx.sg === 'male') return `${prefix}${t('relBrotherInLawHusbandsYounger')}`;
+          return `${prefix}${t('relSisterInLawHusbandsSide')}`;
         }
         if (cousinGender === 'female') {
-          if (ctx.sg === 'male') return `${prefix}小舅子`;
-          return `${prefix}小姨子`;
+          if (ctx.sg === 'male') return `${prefix}${t('relBrotherInLawWifesSide')}`;
+          return `${prefix}${t('relSisterInLawWifesSide')}`;
         }
-        return `${prefix}亲属`;
+        return `${prefix}${t('relRelative')}`;
       }
 
-      // SUUDD: start is spouse of a cousin of end → start is 嫂子/弟妹/姐夫/妹夫 of end
+      // SUUDD: start is spouse of a cousin of end
       const spouseStep = ctx.steps.find(s => s.dir === 'spouse');
       const spouseId = spouseStep?.toId;
       const spouse = spouseId ? ctx.persons[spouseId] : undefined;
@@ -773,17 +771,17 @@ const KINSHIP_RULES: KinshipRule[] = [
 
       if (spouseGender === 'male') {
         const older = compareAge(spouse!, ctx.endPerson);
-        if (older === 'older') return `${prefix}嫂子`;
-        if (older === 'younger') return `${prefix}弟妹`;
-        return `${prefix}嫂子/${prefix}弟妹`;
+        if (older === 'older') return `${prefix}${t('relSisterInLawOlder')}`;
+        if (older === 'younger') return `${prefix}${t('relSisterInLawYounger')}`;
+        return `${prefix}${t('relSisterInLawOlder')}/${prefix}${t('relSisterInLawYounger')}`;
       }
       if (spouseGender === 'female') {
         const older = compareAge(spouse!, ctx.endPerson);
-        if (older === 'older') return `${prefix}姐夫`;
-        if (older === 'younger') return `${prefix}妹夫`;
-        return `${prefix}姐夫/${prefix}妹夫`;
+        if (older === 'older') return `${prefix}${t('relBrotherInLawOlderSister')}`;
+        if (older === 'younger') return `${prefix}${t('relBrotherInLawYoungerSister')}`;
+        return `${prefix}${t('relBrotherInLawOlderSister')}/${prefix}${t('relBrotherInLawYoungerSister')}`;
       }
-      return `${prefix}姐夫/${prefix}妹夫/${prefix}嫂子/${prefix}弟妹`;
+      return `${prefix}${t('relBrotherInLawOlderSister')}/${prefix}${t('relBrotherInLawYoungerSister')}/${prefix}${t('relSisterInLawOlder')}/${prefix}${t('relSisterInLawYounger')}`;
     },
   },
 ];

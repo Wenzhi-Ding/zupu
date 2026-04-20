@@ -2,6 +2,7 @@ import React from 'react';
 import type { Person } from '../types';
 import { useFamilyStore } from '../store/familyStore';
 import { getLayoutConstants } from '../layout/engine';
+import { useI18n } from '../i18n';
 import './PersonCard.css';
 
 interface Props {
@@ -47,6 +48,7 @@ export const PersonCard: React.FC<Props> = ({
   onMoveTargetPick,
 }) => {
   const { CARD_WIDTH, CARD_HEIGHT } = getLayoutConstants();
+  const locale = useI18n((s) => s.locale);
   const selectPerson = useFamilyStore((s) => s.selectPerson);
   const selectedId = useFamilyStore((s) => s.selectedPersonId);
   const toggleCollapse = useFamilyStore((s) => s.toggleCollapse);
@@ -61,20 +63,75 @@ export const PersonCard: React.FC<Props> = ({
   const dimClass = hasPath && !isOnPath && !isPathEnd ? 'relation-dim' : '';
   const selectClass = selectMode && isSelected ? 'batch-selected' : '';
 
-  const nameChars = [...person.name];
+  const isEn = locale === 'en';
   const genderSymbol = person.gender === 'male' ? '♂' : person.gender === 'female' ? '♀' : '';
 
-  const nameStartY = 16;
-  const lineHeight = 17;
+  // Chinese: vertical name rendering
+  // English: horizontal name rendering (first name + last name on separate lines)
+  const nameChars = [...person.name];
+
+  let nameElements: React.ReactNode[];
+  let nameBottom: number;
+
+  if (isEn) {
+    // English horizontal layout
+    const parts = person.name.split(/\s+/);
+    const fontSize = 10;
+    const nameStartY = 14;
+    const lineHeight = 13;
+    nameElements = parts.map((part, i) => (
+      <text
+        key={i}
+        x={CARD_WIDTH / 2}
+        y={nameStartY + i * lineHeight}
+        textAnchor="middle"
+        className="card-name card-name-en"
+        fontSize={fontSize}
+      >
+        {part}
+      </text>
+    ));
+    nameBottom = nameStartY + (parts.length - 1) * lineHeight;
+  } else {
+    // Chinese vertical layout
+    const nameStartY = 16;
+    const lineHeight = 17;
+    nameElements = nameChars.map((char, i) => (
+      <text
+        key={i}
+        x={CARD_WIDTH / 2}
+        y={nameStartY + i * lineHeight}
+        textAnchor="middle"
+        className="card-name"
+      >
+        {char}
+      </text>
+    ));
+    nameBottom = 16 + (nameChars.length - 1) * 17;
+  }
+
   const titleText = person.title ? `(${person.title})` : '';
-  const titleY = nameStartY + nameChars.length * lineHeight + 2;
-  const genderY = titleY + (titleText ? 14 : 0);
 
   const birthDeathText =
     person.birthYear || person.deathYear
       ? `${person.birthYear ?? '?'}-${person.deathYear ?? ''}`
       : '';
-  const birthDeathY = genderY + 14;
+
+  // Position elements sequentially below the name
+  // Chinese: generous spacing to match original layout
+  // English: tighter spacing for the shorter card (64px height)
+  let cursor: number;
+  if (isEn) {
+    cursor = nameBottom + 14;
+  } else {
+    // Restore original Chinese spacing: effectively nameStartY + nameChars.length * lineHeight + 2
+    cursor = 16 + nameChars.length * 17 + 2;
+  }
+  const titleY = cursor;
+  if (titleText) cursor += isEn ? 11 : 14;
+  const genderTextY = cursor;
+  cursor += isEn ? 13 : 14;
+  const yearY = cursor;
 
   return (
     <g
@@ -118,17 +175,7 @@ export const PersonCard: React.FC<Props> = ({
         }}
       />
 
-      {nameChars.map((char, i) => (
-        <text
-          key={i}
-          x={CARD_WIDTH / 2}
-          y={nameStartY + i * lineHeight}
-          textAnchor="middle"
-          className="card-name"
-        >
-          {char}
-        </text>
-      ))}
+      {nameElements}
 
       {titleText && (
         <text x={CARD_WIDTH / 2} y={titleY} textAnchor="middle" className="card-title">
@@ -136,12 +183,12 @@ export const PersonCard: React.FC<Props> = ({
         </text>
       )}
 
-      <text x={CARD_WIDTH / 2} y={genderY} textAnchor="middle" className="card-info">
+      <text x={CARD_WIDTH / 2} y={genderTextY} textAnchor="middle" className="card-info">
         {genderSymbol}
       </text>
 
       {birthDeathText && (
-        <text x={CARD_WIDTH / 2} y={birthDeathY} textAnchor="middle" className="card-year">
+        <text x={CARD_WIDTH / 2} y={yearY} textAnchor="middle" className="card-year">
           {birthDeathText}
         </text>
       )}

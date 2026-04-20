@@ -5,7 +5,13 @@ import { computeLayout, computeUnitPersonOrder, getLayoutConstants } from '../la
 import { PersonCard } from './PersonCard';
 import { AddPersonDialog } from './AddPersonDialog';
 import { RelationshipChain } from './RelationshipChain';
+import { useI18n, useT } from '../i18n';
 import './FamilyTree.css';
+
+function useTranslationHelper() {
+  const t = useT();
+  return { t };
+}
 
 interface DragState {
   personId: string;
@@ -50,6 +56,8 @@ export const FamilyTree: React.FC = () => {
   const removePersons = useFamilyStore((s) => s.removePersons);
   const movePersonsToParent = useFamilyStore((s) => s.movePersonsToParent);
   const setMoveTargetMode = useFamilyStore((s) => s.setMoveTargetMode);
+  const locale = useI18n((s) => s.locale);
+  const { t } = useTranslationHelper();
   const [addingForPersonId, setAddingForPersonId] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -76,7 +84,7 @@ export const FamilyTree: React.FC = () => {
   const skipAnchorRef = useRef(false);
   const initialCenterDone = useRef(false);
 
-  const layout = useMemo(() => computeLayout(persons, siblingOrder), [persons, siblingOrder]);
+  const layout = useMemo(() => computeLayout(persons, siblingOrder), [persons, siblingOrder, locale]);
   const { CARD_WIDTH, CARD_HEIGHT, COUPLE_GAP, V_GAP } = getLayoutConstants();
 
   const pathSet = useMemo(() => new Set(relationPath ?? []), [relationPath]);
@@ -857,7 +865,7 @@ export const FamilyTree: React.FC = () => {
                   y={targetY + CARD_HEIGHT / 2 + 4}
                   className="generation-guide-label"
                 >
-                  第 {targetGen} 代
+                  {t('generationGuide', { gen: targetGen })}
                 </text>
               </g>
             );
@@ -866,12 +874,19 @@ export const FamilyTree: React.FC = () => {
             const dragPerson = persons[dragRender.personId];
             if (!dragPerson) return null;
             const genderClass = dragPerson.gender === 'male' ? 'male' : dragPerson.gender === 'female' ? 'female' : '';
+            const isEn = locale === 'en';
             return (
               <g className={`person-card ${genderClass} drag-ghost`} transform={`translate(${dragRender.currentSvgX}, ${dragRender.currentSvgY})`}>
                 <rect width={CARD_WIDTH} height={CARD_HEIGHT} rx={8} ry={8} className="card-bg" />
-                {[...dragPerson.name].map((char, i) => (
-                  <text key={i} x={CARD_WIDTH / 2} y={16 + i * 17} textAnchor="middle" className="card-name">{char}</text>
-                ))}
+                {isEn ? (
+                  dragPerson.name.split(/\s+/).map((part, i) => (
+                    <text key={i} x={CARD_WIDTH / 2} y={14 + i * 13} textAnchor="middle" className="card-name card-name-en" fontSize={10}>{part}</text>
+                  ))
+                ) : (
+                  [...dragPerson.name].map((char, i) => (
+                    <text key={i} x={CARD_WIDTH / 2} y={16 + i * 17} textAnchor="middle" className="card-name">{char}</text>
+                  ))
+                )}
               </g>
             );
           })()}
@@ -954,35 +969,35 @@ export const FamilyTree: React.FC = () => {
 
       {selectMode && selectedIds.length > 0 && (
         <div className="select-action-bar">
-          <span className="select-count">已选择 {selectedIds.length} 人</span>
+          <span className="select-count">{t('selectedCount', { count: selectedIds.length })}</span>
           <button
             className="select-action-btn danger"
             onClick={() => {
-              if (window.confirm(`确定要删除 ${selectedIds.length} 人吗？`)) {
+              if (window.confirm(t('confirmDeleteMultiple', { count: selectedIds.length }))) {
                 removePersons(selectedIds);
               }
             }}
           >
-            删除
+            {t('delete')}
           </button>
           <button
             className="select-action-btn primary"
             onClick={() => setMoveTargetMode(true)}
             disabled={moveTargetMode}
           >
-            {moveTargetMode ? '请点击目标人物…' : '移动到…'}
+            {moveTargetMode ? t('clickTarget') : t('moveTo')}
           </button>
           <button
             className="select-action-btn"
             onClick={clearSelection}
           >
-            取消选择
+            {t('deselect')}
           </button>
         </div>
       )}
 
       {moveTargetMode && (
-        <div className="select-hint-bar">点击目标人物，所选人员将成为其子女</div>
+        <div className="select-hint-bar">{t('clickTargetHint')}</div>
       )}
     </div>
   );

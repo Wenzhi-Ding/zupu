@@ -1,5 +1,6 @@
 import type { Person } from '../types';
 import type { LocalData } from '../store/localDb';
+import { isEnglish } from '../i18n';
 
 function createHanDynasty(): LocalData {
   const ids = {
@@ -371,6 +372,220 @@ function createShengFamily(): LocalData {
   };
 }
 
+function createGameOfThrones(): LocalData {
+  const ids = {
+    rickard: 'got-001',      // Rickard Stark
+    brandon: 'got-002',       // Brandon Stark (elder)
+    eddard: 'got-003',        // Eddard Stark
+    catelyn: 'got-004',       // Catelyn Tully
+    lyanna: 'got-005',        // Lyanna Stark
+    benjen: 'got-006',        // Benjen Stark
+    robb: 'got-007',          // Robb Stark
+    sansa: 'got-008',         // Sansa Stark
+    arya: 'got-009',          // Arya Stark
+    bran: 'got-010',          // Bran Stark
+    rickon: 'got-011',        // Rickon Stark
+    jonSnow: 'got-012',       // Jon Snow
+    rhaegar: 'got-013',       // Rhaegar Targaryen
+    aerys: 'got-014',         // Aerys II Targaryen
+    rhaella: 'got-015',       // Rhaella Targaryen
+    daenerys: 'got-016',      // Daenerys Targaryen
+    viserys: 'got-017',       // Viserys Targaryen
+    cersei: 'got-018',        // Cersei Lannister
+    jaime: 'got-019',         // Jaime Lannister
+    tyrion: 'got-020',        // Tyrion Lannister
+    joffrey: 'got-021',       // Joffrey Baratheon
+    myrcella: 'got-022',      // Myrcella Baratheon
+    tommen: 'got-023',        // Tommen Baratheon
+    tywin: 'got-024',         // Tywin Lannister
+    joanna: 'got-025',        // Joanna Lannister
+  };
+
+  const persons: Record<string, Person> = {
+    [ids.rickard]: {
+      id: ids.rickard, name: 'Rickard Stark', gender: 'male', generation: 1,
+      title: 'Lord of Winterfell', bio: 'Lord of Winterfell, burned alive by Aerys II',
+      spouseIds: [], childrenIds: [ids.brandon, ids.eddard, ids.lyanna, ids.benjen],
+      parentIds: [], collapsed: false,
+    },
+    [ids.brandon]: {
+      id: ids.brandon, name: 'Brandon Stark', gender: 'male', generation: 2,
+      title: 'Eldest son', bio: 'Ned\'s elder brother, strangled by Aerys II',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.rickard], collapsed: false,
+    },
+    [ids.eddard]: {
+      id: ids.eddard, name: 'Eddard Stark', gender: 'male', generation: 2,
+      birthYear: 263, deathYear: '298', title: 'Hand of the King',
+      bio: 'Lord of Winterfell, Warden of the North',
+      spouseIds: [ids.catelyn], childrenIds: [ids.robb, ids.sansa, ids.arya, ids.bran, ids.rickon],
+      parentIds: [ids.rickard], collapsed: false,
+    },
+    [ids.catelyn]: {
+      id: ids.catelyn, name: 'Catelyn Tully', gender: 'female', generation: 2,
+      deathYear: '299', title: 'Lady Stark',
+      bio: 'Daughter of Hoster Tully, wife of Eddard Stark',
+      spouseIds: [ids.eddard], childrenIds: [ids.robb, ids.sansa, ids.arya, ids.bran, ids.rickon],
+      parentIds: [], collapsed: false,
+    },
+    [ids.lyanna]: {
+      id: ids.lyanna, name: 'Lyanna Stark', gender: 'female', generation: 2,
+      deathYear: '283', title: 'She-Wolf',
+      bio: 'Sister of Eddard, mother of Jon Snow',
+      spouseIds: [ids.rhaegar], childrenIds: [ids.jonSnow],
+      parentIds: [ids.rickard], collapsed: false,
+    },
+    [ids.benjen]: {
+      id: ids.benjen, name: 'Benjen Stark', gender: 'male', generation: 2,
+      title: 'First Ranger', bio: 'Uncle of the Stark children, man of the Night\'s Watch',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.rickard], collapsed: false,
+    },
+    [ids.robb]: {
+      id: ids.robb, name: 'Robb Stark', gender: 'male', generation: 3,
+      birthYear: 285, deathYear: '299', title: 'King in the North',
+      bio: 'Eldest son of Eddard and Catelyn, betrayed at the Red Wedding',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.eddard, ids.catelyn], collapsed: false,
+    },
+    [ids.sansa]: {
+      id: ids.sansa, name: 'Sansa Stark', gender: 'female', generation: 3,
+      birthYear: 287, title: 'Lady of Winterfell',
+      bio: 'Eldest daughter, survived King\'s Landing and became Lady of Winterfell',
+      spouseIds: [ids.tyrion], childrenIds: [],
+      parentIds: [ids.eddard, ids.catelyn], collapsed: false,
+    },
+    [ids.arya]: {
+      id: ids.arya, name: 'Arya Stark', gender: 'female', generation: 3,
+      birthYear: 289, title: 'No One',
+      bio: 'Trained as a Faceless Man, deadly swordswoman',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.eddard, ids.catelyn], collapsed: false,
+    },
+    [ids.bran]: {
+      id: ids.bran, name: 'Bran Stark', gender: 'male', generation: 3,
+      birthYear: 290, title: 'The Three-Eyed Raven',
+      bio: 'Fell from a tower, became the Three-Eyed Raven',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.eddard, ids.catelyn], collapsed: false,
+    },
+    [ids.rickon]: {
+      id: ids.rickon, name: 'Rickon Stark', gender: 'male', generation: 3,
+      birthYear: 295, deathYear: '303', title: 'Youngest Stark',
+      bio: 'Youngest son of Eddard and Catelyn',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.eddard, ids.catelyn], collapsed: false,
+    },
+    [ids.jonSnow]: {
+      id: ids.jonSnow, name: 'Jon Snow', gender: 'male', generation: 3,
+      birthYear: 282, title: 'King in the North',
+      bio: 'Raised as Ned\'s bastard, actually son of Lyanna and Rhaegar',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.lyanna, ids.rhaegar], collapsed: false,
+    },
+    [ids.aerys]: {
+      id: ids.aerys, name: 'Aerys Targaryen', gender: 'male', generation: 1,
+      deathYear: '283', title: 'The Mad King',
+      bio: 'Last Targaryen king, slain by Jaime Lannister',
+      spouseIds: [ids.rhaella], childrenIds: [ids.rhaegar, ids.viserys, ids.daenerys],
+      parentIds: [], collapsed: false,
+    },
+    [ids.rhaella]: {
+      id: ids.rhaella, name: 'Rhaella Targaryen', gender: 'female', generation: 1,
+      deathYear: '284', title: 'Queen',
+      bio: 'Wife of Aerys II, mother of Rhaegar, Viserys, and Daenerys',
+      spouseIds: [ids.aerys], childrenIds: [ids.rhaegar, ids.viserys, ids.daenerys],
+      parentIds: [], collapsed: false,
+    },
+    [ids.rhaegar]: {
+      id: ids.rhaegar, name: 'Rhaegar Targaryen', gender: 'male', generation: 2,
+      deathYear: '283', title: 'Prince of Dragonstone',
+      bio: 'Eldest son of the Mad King, father of Jon Snow',
+      spouseIds: [ids.lyanna], childrenIds: [ids.jonSnow],
+      parentIds: [ids.aerys, ids.rhaella], collapsed: false,
+    },
+    [ids.viserys]: {
+      id: ids.viserys, name: 'Viserys Targaryen', gender: 'male', generation: 2,
+      deathYear: '298', title: 'Beggar King',
+      bio: 'Exiled Targaryen prince, sold his sister Daenerys',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.aerys, ids.rhaella], collapsed: false,
+    },
+    [ids.daenerys]: {
+      id: ids.daenerys, name: 'Daenerys Targaryen', gender: 'female', generation: 2,
+      birthYear: 284, deathYear: '305', title: 'Mother of Dragons',
+      bio: 'Stormborn, conqueror, liberator of Slaver\'s Bay',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.aerys, ids.rhaella], collapsed: false,
+    },
+    [ids.tywin]: {
+      id: ids.tywin, name: 'Tywin Lannister', gender: 'male', generation: 1,
+      deathYear: '300', title: 'Hand of the King',
+      bio: 'Lord of Casterly Rock, richest man in Westeros',
+      spouseIds: [ids.joanna], childrenIds: [ids.cersei, ids.jaime, ids.tyrion],
+      parentIds: [], collapsed: false,
+    },
+    [ids.joanna]: {
+      id: ids.joanna, name: 'Joanna Lannister', gender: 'female', generation: 1,
+      deathYear: '273', title: 'Lady Lannister',
+      bio: 'Wife of Tywin, died giving birth to Tyrion',
+      spouseIds: [ids.tywin], childrenIds: [ids.cersei, ids.jaime, ids.tyrion],
+      parentIds: [], collapsed: false,
+    },
+    [ids.cersei]: {
+      id: ids.cersei, name: 'Cersei Lannister', gender: 'female', generation: 2,
+      birthYear: 266, deathYear: '305', title: 'Queen Regent',
+      bio: 'Twin sister of Jaime, Queen of the Seven Kingdoms',
+      spouseIds: [], childrenIds: [ids.joffrey, ids.myrcella, ids.tommen],
+      parentIds: [ids.tywin, ids.joanna], collapsed: false,
+    },
+    [ids.jaime]: {
+      id: ids.jaime, name: 'Jaime Lannister', gender: 'male', generation: 2,
+      birthYear: 266, deathYear: '305', title: 'Kingslayer',
+      bio: 'Lord Commander of the Kingsguard, twin brother of Cersei',
+      spouseIds: [], childrenIds: [ids.joffrey, ids.myrcella, ids.tommen],
+      parentIds: [ids.tywin, ids.joanna], collapsed: false,
+    },
+    [ids.tyrion]: {
+      id: ids.tyrion, name: 'Tyrion Lannister', gender: 'male', generation: 2,
+      birthYear: 273, title: 'Hand of the Queen',
+      bio: 'The Imp, witty and clever, served as Hand to Daenerys',
+      spouseIds: [ids.sansa], childrenIds: [],
+      parentIds: [ids.tywin, ids.joanna], collapsed: false,
+    },
+    [ids.joffrey]: {
+      id: ids.joffrey, name: 'Joffrey Baratheon', gender: 'male', generation: 3,
+      birthYear: 286, deathYear: '300', title: 'King',
+      bio: 'Cruel boy king, son of Cersei and Jaime',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.cersei, ids.jaime], collapsed: false,
+    },
+    [ids.myrcella]: {
+      id: ids.myrcella, name: 'Myrcella Baratheon', gender: 'female', generation: 3,
+      birthYear: 288, deathYear: '303', title: 'Princess',
+      bio: 'Daughter of Cersei and Jaime, gentle and kind',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.cersei, ids.jaime], collapsed: false,
+    },
+    [ids.tommen]: {
+      id: ids.tommen, name: 'Tommen Baratheon', gender: 'male', generation: 3,
+      birthYear: 291, deathYear: '303', title: 'King',
+      bio: 'Youngest son of Cersei and Jaime, became king after Joffrey',
+      spouseIds: [], childrenIds: [],
+      parentIds: [ids.cersei, ids.jaime], collapsed: false,
+    },
+  };
+
+  return {
+    persons,
+    siblingOrder: {},
+    spouseOrder: {},
+    selectedPersonId: ids.eddard,
+    currentTree: null,
+    treeNames: {},
+  };
+}
+
 export interface SampleTree {
   key: string;
   label: string;
@@ -381,7 +596,7 @@ export interface SampleTree {
   getData: () => LocalData;
 }
 
-export const SAMPLE_TREES: SampleTree[] = [
+const ZH_SAMPLES: SampleTree[] = [
   {
     key: 'han-dynasty',
     label: '刘邦——汉朝皇室',
@@ -401,3 +616,21 @@ export const SAMPLE_TREES: SampleTree[] = [
     getData: createShengFamily,
   },
 ];
+
+const EN_SAMPLES: SampleTree[] = [
+  {
+    key: 'game-of-thrones',
+    label: 'Eddard Stark — House Stark & Targaryen',
+    treeName: 'Game of Thrones',
+    anchorPersonName: 'Eddard Stark',
+    description: 'Key families from A Song of Ice and Fire',
+    personCount: 25,
+    getData: createGameOfThrones,
+  },
+];
+
+export function getSampleTrees(): SampleTree[] {
+  return isEnglish() ? EN_SAMPLES : ZH_SAMPLES;
+}
+
+export const SAMPLE_TREES: SampleTree[] = ZH_SAMPLES;

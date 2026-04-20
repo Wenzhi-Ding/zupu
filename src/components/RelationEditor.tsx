@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useT } from '../i18n';
 import { useFamilyStore } from '../store/familyStore';
 import type { Person } from '../types';
 import './RelationEditor.css';
@@ -71,6 +72,7 @@ const RelationRow: React.FC<RelationRowProps> = ({
   onNavigate,
   excludeIds,
 }) => {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const [query, setQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -117,7 +119,7 @@ const RelationRow: React.FC<RelationRowProps> = ({
             setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
-          placeholder="输入姓名搜索..."
+          placeholder={t('searchNamePlaceholder')}
         />
         <button className="relation-row-btn cancel" onClick={() => { setEditing(false); setQuery(''); }}>
           ✕
@@ -152,11 +154,11 @@ const RelationRow: React.FC<RelationRowProps> = ({
         <button
           className="relation-row-btn edit"
           onClick={() => { setEditing(true); setQuery(person.name); }}
-          title="更换"
+          title={t('replace')}
         >
           ✎
         </button>
-        <button className="relation-row-btn remove" onClick={onRemove} title="移除关系">
+        <button className="relation-row-btn remove" onClick={onRemove} title={t('removeRelation')}>
           ✕
         </button>
       </div>
@@ -177,6 +179,7 @@ const AddRelationRow: React.FC<AddRelationRowProps> = ({
   excludeIds,
   onAdd,
 }) => {
+  const t = useT();
   const [active, setActive] = useState(false);
   const [query, setQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -216,7 +219,7 @@ const AddRelationRow: React.FC<AddRelationRowProps> = ({
     return (
       <div className="relation-add-row" onClick={() => setActive(true)}>
         <span className="relation-add-icon">+</span>
-        <span>添加...</span>
+        <span>{t('addRelation')}</span>
       </div>
     );
   }
@@ -232,7 +235,7 @@ const AddRelationRow: React.FC<AddRelationRowProps> = ({
           setShowDropdown(true);
         }}
         onFocus={() => setShowDropdown(true)}
-        placeholder="输入姓名搜索..."
+        placeholder={t('searchNamePlaceholder')}
       />
       <button className="relation-row-btn cancel" onClick={() => { setActive(false); setQuery(''); }}>
         ✕

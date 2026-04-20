@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { RelationType, Gender } from '../types';
 import { useFamilyStore } from '../store/familyStore';
+import { useT } from '../i18n';
 import './AddPersonDialog.css';
 
 interface Props {
@@ -8,13 +9,13 @@ interface Props {
   onClose: () => void;
 }
 
-const RELATION_OPTIONS: { value: RelationType; label: string; defaultGender: Gender }[] = [
-  { value: 'father', label: '父亲', defaultGender: 'male' },
-  { value: 'mother', label: '母亲', defaultGender: 'female' },
-  { value: 'son', label: '儿子', defaultGender: 'male' },
-  { value: 'daughter', label: '女儿', defaultGender: 'female' },
-  { value: 'husband', label: '丈夫', defaultGender: 'male' },
-  { value: 'wife', label: '妻子', defaultGender: 'female' },
+const RELATION_OPTIONS: { value: RelationType; labelKey: string; defaultGender: Gender }[] = [
+  { value: 'father', labelKey: 'father', defaultGender: 'male' },
+  { value: 'mother', labelKey: 'mother', defaultGender: 'female' },
+  { value: 'son', labelKey: 'son', defaultGender: 'male' },
+  { value: 'daughter', labelKey: 'daughter', defaultGender: 'female' },
+  { value: 'husband', labelKey: 'husband', defaultGender: 'male' },
+  { value: 'wife', labelKey: 'wife', defaultGender: 'female' },
 ];
 
 export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) => {
@@ -23,6 +24,7 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
   const [birthYear, setBirthYear] = useState('');
   const addRelation = useFamilyStore((s) => s.addRelation);
   const targetPerson = useFamilyStore((s) => s.persons[targetPersonId]);
+  const t = useT();
 
   if (!targetPerson) return null;
 
@@ -40,10 +42,10 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
   return (
     <div className="dialog-overlay" onClick={onClose}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <h3>为「{targetPerson.name}」添加亲属</h3>
+        <h3>{t('addRelativeTitle', { name: targetPerson.name })}</h3>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>关系类型</label>
+            <label>{t('relationType')}</label>
             <div className="relation-buttons">
               {RELATION_OPTIONS.map((opt) => (
                 <button
@@ -52,39 +54,39 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
                   className={`relation-btn ${relationType === opt.value ? 'active' : ''}`}
                   onClick={() => setRelationType(opt.value)}
                 >
-                  {opt.label}
+                  {t(opt.labelKey as any)}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="form-group">
-            <label>姓名</label>
+            <label>{t('name')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="请输入姓名"
+              placeholder={t('enterName')}
               autoFocus
             />
           </div>
 
           <div className="form-group">
-            <label>出生年份（可选）</label>
+            <label>{t('birthYearOptional')}</label>
             <input
               type="number"
               value={birthYear}
               onChange={(e) => setBirthYear(e.target.value)}
-              placeholder="例如 1990"
+              placeholder={t('birthYearPlaceholder')}
             />
           </div>
 
           <div className="dialog-actions">
             <button type="button" className="btn-cancel" onClick={onClose}>
-              取消
+              {t('cancel')}
             </button>
             <button type="submit" className="btn-confirm" disabled={!name.trim()}>
-              确认添加
+              {t('confirmAdd')}
             </button>
           </div>
         </form>

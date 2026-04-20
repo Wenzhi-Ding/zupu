@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useT } from '../i18n';
 import { useDataIO } from '../store/useDataIO';
 
 interface MobileMoreMenuProps {
@@ -7,6 +8,7 @@ interface MobileMoreMenuProps {
 }
 
 export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({ onTreeManager, onHelp }) => {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const { fileInputRef, handleExport, handleImport, handleFileChange } = useDataIO();
 
@@ -26,7 +28,7 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({ onTreeManager, o
         type="button"
         className="mobile-more-btn"
         onClick={() => setOpen((v) => !v)}
-        aria-label="更多操作"
+        aria-label={t('moreActions')}
       >
         ⋯
       </button>
@@ -39,28 +41,28 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({ onTreeManager, o
           className="more-menu-item"
           onClick={() => { onTreeManager(); close(); }}
         >
-          <span className="more-menu-icon">📋</span> 族谱管理
+          <span className="more-menu-icon">📋</span> {t('treeManager')}
         </button>
         <button
           type="button"
           className="more-menu-item"
           onClick={() => { handleExport(); close(); }}
         >
-          <span className="more-menu-icon">📤</span> 导出数据
+          <span className="more-menu-icon">📤</span> {t('exportData')}
         </button>
         <button
           type="button"
           className="more-menu-item"
           onClick={() => { handleImport(); close(); }}
         >
-          <span className="more-menu-icon">📥</span> 导入数据
+          <span className="more-menu-icon">📥</span> {t('importData')}
         </button>
         <button
           type="button"
           className="more-menu-item"
           onClick={() => { onHelp(); close(); }}
         >
-          <span className="more-menu-icon">❓</span> 帮助
+          <span className="more-menu-icon">❓</span> {t('help')}
         </button>
         <a
           href="https://github.com/Wenzhi-Ding/zupu/issues"
@@ -69,7 +71,7 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({ onTreeManager, o
           className="more-menu-item"
           onClick={close}
         >
-          <span className="more-menu-icon">💡</span> 提建议
+          <span className="more-menu-icon">💡</span> {t('feedback')}
         </a>
       </div>
       <input

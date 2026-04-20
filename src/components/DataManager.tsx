@@ -1,16 +1,18 @@
+import { useT } from '../i18n';
 import { useDataIO } from '../store/useDataIO';
 import './DataManager.css';
 
 export const DataManager = () => {
+  const t = useT();
   const { fileInputRef, handleExport, handleImport, handleFileChange } = useDataIO();
 
   return (
     <div className="data-manager">
       <button type="button" className="data-mgr-btn" onClick={handleExport}>
-        导出数据
+        {t('exportData')}
       </button>
       <button type="button" className="data-mgr-btn" onClick={handleImport}>
-        导入数据
+        {t('importData')}
       </button>
       <input
         ref={fileInputRef}

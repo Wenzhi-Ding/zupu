@@ -58,6 +58,13 @@
   pointer-events: none;
 }
 
+.card-name-en {
+  font-size: 10px;
+  font-weight: 600;
+  fill: #1a1a2e;
+  pointer-events: none;
+}
+
 .card-title {
   font-size: 10px;
   fill: #888;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFamilyStore } from '../store/familyStore';
 import { RelationEditor } from './RelationEditor';
+import { useT } from '../i18n';
 import './Sidebar.css';
 
 export const Sidebar: React.FC = () => {
@@ -9,6 +10,8 @@ export const Sidebar: React.FC = () => {
   const updatePerson = useFamilyStore((s) => s.updatePerson);
   const removePerson = useFamilyStore((s) => s.removePerson);
   const selectPerson = useFamilyStore((s) => s.selectPerson);
+
+  const t = useT();
 
   const person = selectedId ? persons[selectedId] : null;
 
@@ -47,7 +50,7 @@ export const Sidebar: React.FC = () => {
   };
 
   const handleDelete = () => {
-    if (window.confirm(`确定要删除「${person.name}」吗？这会同时断开所有关系。`)) {
+    if (window.confirm(t('confirmDelete', { name: person.name }))) {
       removePerson(person.id);
       selectPerson(null);
     }
@@ -67,84 +70,84 @@ export const Sidebar: React.FC = () => {
         {editing ? (
           <div className="sidebar-edit">
             <div className="form-group">
-              <label>姓名</label>
+              <label>{t('name')}</label>
               <input value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
             <div className="form-group">
-              <label>性别</label>
+              <label>{t('gender')}</label>
               <select value={editGender} onChange={(e) => setEditGender(e.target.value as 'male' | 'female' | 'unknown')}>
-                <option value="male">男</option>
-                <option value="female">女</option>
-                <option value="unknown">未知</option>
+                <option value="male">{t('male')}</option>
+                <option value="female">{t('female')}</option>
+                <option value="unknown">{t('unknown')}</option>
               </select>
             </div>
             <div className="form-group">
-              <label>称谓</label>
+              <label>{t('title')}</label>
               <input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="例如 爷爷、外婆"
+                placeholder={t('titlePlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>出生年份</label>
+              <label>{t('birthYear')}</label>
               <input
                 type="number"
                 value={editBirthYear}
                 onChange={(e) => setEditBirthYear(e.target.value)}
-                placeholder="例如 1990"
+                placeholder={t('birthYearPlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>卒年</label>
+              <label>{t('deathYear')}</label>
               <input
                 type="text"
                 value={editDeathYear}
                 onChange={(e) => setEditDeathYear(e.target.value)}
-                placeholder="例如 2020"
+                placeholder={t('deathYearPlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>生平履历</label>
+              <label>{t('bio')}</label>
               <textarea
                 className="bio-textarea"
                 value={editBio}
                 onChange={(e) => setEditBio(e.target.value)}
-                placeholder="记录生平事迹..."
+                placeholder={t('bioPlaceholder')}
                 rows={5}
               />
             </div>
             <div className="sidebar-actions">
-              <button className="btn-confirm" onClick={saveEdit}>保存</button>
-              <button className="btn-cancel" onClick={() => setEditing(false)}>取消</button>
+              <button className="btn-confirm" onClick={saveEdit}>{t('save')}</button>
+              <button className="btn-cancel" onClick={() => setEditing(false)}>{t('cancel')}</button>
             </div>
           </div>
         ) : (
           <>
             <div className="sidebar-info">
               <div className="info-row">
-                <span className="info-label">性别</span>
-                <span>{person.gender === 'male' ? '男 ♂' : person.gender === 'female' ? '女 ♀' : '未知'}</span>
+                <span className="info-label">{t('gender')}</span>
+                <span>{person.gender === 'male' ? t('maleSymbol') : person.gender === 'female' ? t('femaleSymbol') : t('unknown')}</span>
               </div>
               {person.title && (
                 <div className="info-row">
-                  <span className="info-label">称谓</span>
+                  <span className="info-label">{t('title')}</span>
                   <span>{person.title}</span>
                 </div>
               )}
               {person.birthYear && (
                 <div className="info-row">
-                  <span className="info-label">出生年份</span>
+                  <span className="info-label">{t('birthYear')}</span>
                   <span>{person.birthYear}</span>
                 </div>
               )}
               <div className="info-row">
-                <span className="info-label">第几代</span>
-                <span>第 {person.generation} 代</span>
+                <span className="info-label">{t('generation')}</span>
+                <span>{t('generationValue', { gen: person.generation })}</span>
               </div>
               {person.deathYear && (
                 <div className="info-row">
-                  <span className="info-label">卒年</span>
+                  <span className="info-label">{t('deathYear')}</span>
                   <span>{person.deathYear}</span>
                 </div>
               )}
@@ -152,7 +155,7 @@ export const Sidebar: React.FC = () => {
 
             {person.bio && (
               <div className="bio-section">
-                <div className="bio-label">生平履历</div>
+                <div className="bio-label">{t('bio')}</div>
                 <div className="bio-content">{person.bio}</div>
               </div>
             )}
@@ -161,26 +164,26 @@ export const Sidebar: React.FC = () => {
               <RelationEditor
                 personId={person.id}
                 relationType="parent"
-                label="父母"
+                label={t('parents')}
                 currentIds={person.parentIds}
               />
               <RelationEditor
                 personId={person.id}
                 relationType="spouse"
-                label="配偶"
+                label={t('spouse')}
                 currentIds={person.spouseIds}
               />
               <RelationEditor
                 personId={person.id}
                 relationType="child"
-                label="子女"
+                label={t('children')}
                 currentIds={person.childrenIds}
               />
             </div>
 
             <div className="sidebar-actions">
-              <button className="btn-edit" onClick={startEdit}>编辑</button>
-              <button className="btn-delete" onClick={handleDelete}>删除</button>
+              <button className="btn-edit" onClick={startEdit}>{t('edit')}</button>
+              <button className="btn-delete" onClick={handleDelete}>{t('delete')}</button>
             </div>
           </>
         )}

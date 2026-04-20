@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useFamilyStore } from '../store/familyStore';
+import { useT, useI18n } from '../i18n';
 import type { Gender } from '../types';
 import './Toolbar.css';
 
@@ -17,6 +18,7 @@ export const Toolbar: React.FC<{ mobileExtra?: React.ReactNode }> = ({ mobileExt
   const selectMode = useFamilyStore((s) => s.selectMode);
   const selectedIds = useFamilyStore((s) => s.selectedIds);
   const toggleSelectMode = useFamilyStore((s) => s.toggleSelectMode);
+  const t = useT();
 
   const [showNewPerson, setShowNewPerson] = useState(false);
   const [newName, setNewName] = useState('');
@@ -30,21 +32,21 @@ export const Toolbar: React.FC<{ mobileExtra?: React.ReactNode }> = ({ mobileExt
   };
 
   const handleReset = () => {
-    if (personCount > 0 && !window.confirm('确定要清空所有数据吗？')) return;
+    if (personCount > 0 && !window.confirm(t('confirmClear'))) return;
     reset();
   };
 
   const getRelationHint = () => {
-    if (relationPickedIds.length === 0) return '请点选第一个人物';
+    if (relationPickedIds.length === 0) return t('relationHint1');
     if (relationPickedIds.length === 1) {
       const name = persons[relationPickedIds[0]]?.name ?? '';
-      return `已选：${name}，请点选第二个人物`;
+      return t('relationHint2', { name });
     }
     if (relationPickedIds.length === 2) {
       const nameA = persons[relationPickedIds[0]]?.name ?? '';
       const nameB = persons[relationPickedIds[1]]?.name ?? '';
-      if (relationPath === null) return `${nameA} 与 ${nameB} 之间无关系`;
-      return `${nameA} → ${nameB}（经过 ${relationPath.length} 人），点选新人物可重新查找`;
+      if (relationPath === null) return t('relationNoPath', { nameA, nameB });
+      return t('relationPathFound', { nameA, nameB, count: relationPath.length });
     }
     return null;
   };
@@ -52,13 +54,13 @@ export const Toolbar: React.FC<{ mobileExtra?: React.ReactNode }> = ({ mobileExt
   return (
     <div className="toolbar">
       <div className="toolbar-left">
-        <h1 className="app-title">族谱</h1>
-        <span className="person-count">{personCount} 人</span>
+        <h1 className="app-title">{t('appTitle')}</h1>
+        <span className="person-count">{t('personCount', { count: personCount })}</span>
         {currentTree && (
           <span className="current-tree-label">
             {currentTree}
             <button type="button" className="show-all-btn" onClick={() => loadTree(null)}>
-              显示全部
+              {t('showAll')}
             </button>
           </span>
         )}
@@ -70,15 +72,15 @@ export const Toolbar: React.FC<{ mobileExtra?: React.ReactNode }> = ({ mobileExt
       <div className="toolbar-right">
         {relationMode ? (
           <button className="toolbar-btn active" onClick={toggleRelationMode}>
-            退出关系查看
+            {t('exitRelationView')}
           </button>
         ) : selectMode ? (
           <>
             <span className="select-mode-hint">
-              {selectedIds.length > 0 ? `已选 ${selectedIds.length} 人` : '点击或框选卡片'}
+              {selectedIds.length > 0 ? t('selectModeHintCount', { count: selectedIds.length }) : t('selectModeHintZero')}
             </span>
             <button className="toolbar-btn active" onClick={toggleSelectMode}>
-              退出范围选择
+              {t('exitSelectMode')}
             </button>
           </>
         ) : showNewPerson ? (
@@ -86,34 +88,34 @@ export const Toolbar: React.FC<{ mobileExtra?: React.ReactNode }> = ({ mobileExt
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="姓名"
+              placeholder={t('namePlaceholder')}
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handleAddRoot()}
             />
             <select value={newGender} onChange={(e) => setNewGender(e.target.value as Gender)}>
-              <option value="male">男</option>
-              <option value="female">女</option>
+              <option value="male">{t('male')}</option>
+              <option value="female">{t('female')}</option>
             </select>
             <button className="toolbar-btn primary" onClick={handleAddRoot}>
-              添加
+              {t('add')}
             </button>
             <button className="toolbar-btn" onClick={() => setShowNewPerson(false)}>
-              取消
+              {t('cancel')}
             </button>
           </div>
         ) : (
           <>
             <button className="toolbar-btn primary" onClick={() => setShowNewPerson(true)}>
-              + 新建人物
+              {t('addPerson')}
             </button>
             <button className="toolbar-btn" onClick={toggleSelectMode}>
-              范围选择
+              {t('selectRange')}
             </button>
             <button className="toolbar-btn" onClick={toggleRelationMode}>
-              展示关系
+              {t('showRelation')}
             </button>
             <button className="toolbar-btn danger" onClick={handleReset}>
-              清空
+              {t('clear')}
             </button>
           </>
         )}

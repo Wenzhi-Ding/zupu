@@ -1,4 +1,5 @@
 import type { Person } from '../types';
+import { isEnglish } from '../i18n';
 
 export interface FamilyUnit {
   id: string;
@@ -26,17 +27,26 @@ export interface LayoutResult {
   maxGen: number;
 }
 
-const CARD_WIDTH = 64;
-const CARD_HEIGHT = 100;
+const CARD_WIDTH_ZH = 64;
+const CARD_HEIGHT_ZH = 100;
+const CARD_WIDTH_EN = 100;
+const CARD_HEIGHT_EN = 72;
 const SIBLING_GAP = 30;
 const COUPLE_GAP = 10;
 const V_GAP = 50;
 
+export function getCardSize(): { width: number; height: number } {
+  if (isEnglish()) return { width: CARD_WIDTH_EN, height: CARD_HEIGHT_EN };
+  return { width: CARD_WIDTH_ZH, height: CARD_HEIGHT_ZH };
+}
+
 export function getLayoutConstants() {
+  const { width: CARD_WIDTH, height: CARD_HEIGHT } = getCardSize();
   return { CARD_WIDTH, CARD_HEIGHT, H_GAP: SIBLING_GAP, V_GAP, COUPLE_GAP };
 }
 
 function unitWidth(unit: FamilyUnit): number {
+  const { width: CARD_WIDTH } = getCardSize();
   const totalPersons = 1 + unit.spouseIds.length;
   return CARD_WIDTH * totalPersons + COUPLE_GAP * (totalPersons - 1);
 }
@@ -91,6 +101,7 @@ export function computeLayout(
   persons: Record<string, Person>,
   siblingOrder?: Record<string, string[]>,
 ): LayoutResult {
+  const { width: CARD_WIDTH, height: CARD_HEIGHT } = getCardSize();
   const personList = Object.values(persons);
   if (personList.length === 0) {
     return { units: new Map(), positions: new Map(), personToUnit: new Map(), rootUnitIds: [], effectiveRootIds: [], crossTreeLinks: [], crossTreeParentUnits: new Set(), minGen: 0, maxGen: 0 };

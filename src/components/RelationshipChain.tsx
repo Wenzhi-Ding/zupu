@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import type { Person } from '../types';
 import { buildChain, computeVisibleChain } from '../utils/relationshipChain';
 import type { RelationChain, ChainNode, ChainEdge } from '../utils/relationshipChain';
+import { useT } from '../i18n';
 import './RelationshipChain.css';
 
 interface Props {
@@ -23,7 +24,7 @@ function renderNode(node: ChainNode, onClick?: () => void) {
     <span
       className={`chain-node ${node.collapsible ? 'collapsible' : ''}`}
       onClick={onClick}
-      title={node.collapsible ? '点击折叠/展开' : undefined}
+      title={node.collapsible ? t('clickToToggle') : undefined}
     >
       {node.label}
     </span>
@@ -31,6 +32,7 @@ function renderNode(node: ChainNode, onClick?: () => void) {
 }
 
 export const RelationshipChain: React.FC<Props> = ({ persons, path }) => {
+  const t = useT();
   const [collapsedSet, setCollapsedSet] = useState<Set<number>>(new Set());
 
   useEffect(() => {
@@ -135,13 +137,13 @@ export const RelationshipChain: React.FC<Props> = ({ persons, path }) => {
       {hasCollapsible && (
         <div className="relation-chain-controls">
           {hasCollapsed && (
-            <button className="chain-ctrl-btn" onClick={expandAll}>展开全部</button>
+            <button className="chain-ctrl-btn" onClick={expandAll}>{t('expandAll')}</button>
           )}
           {!hasCollapsed && fullChain.nodes.filter((n) => n.collapsible).length > 0 && (
-            <button className="chain-ctrl-btn" onClick={collapseAll}>折叠中间</button>
+            <button className="chain-ctrl-btn" onClick={collapseAll}>{t('collapseMiddle')}</button>
           )}
           {hasCollapsed && collapsedSet.size < fullChain.nodes.filter((n) => n.collapsible).length && (
-            <button className="chain-ctrl-btn" onClick={collapseAll}>折叠全部</button>
+            <button className="chain-ctrl-btn" onClick={collapseAll}>{t('collapseAll')}</button>
           )}
         </div>
       )}

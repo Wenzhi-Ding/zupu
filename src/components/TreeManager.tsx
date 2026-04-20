@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useFamilyStore } from '../store/familyStore';
-import { SAMPLE_TREES } from '../data/sampleTrees';
+import { SAMPLE_TREES, getSampleTrees } from '../data/sampleTrees';
 import type { Gender } from '../types';
+import { useT } from '../i18n';
 import './TreeManager.css';
 
 interface SearchResult {
@@ -10,6 +11,7 @@ interface SearchResult {
 }
 
 export const TreeManager: React.FC = () => {
+  const t = useT();
   const showTreeManager = useFamilyStore((s) => s.showTreeManager);
   const setShowTreeManager = useFamilyStore((s) => s.setShowTreeManager);
   const loadSampleData = useFamilyStore((s) => s.loadSampleData);
@@ -63,14 +65,13 @@ export const TreeManager: React.FC = () => {
 
   const handleLoadSample = (sampleKey: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const sample = SAMPLE_TREES.find((s) => s.key === sampleKey);
+    const sample = currentSamples.find((s) => s.key === sampleKey);
     if (!sample) return;
     const data = sample.getData();
     const treeNameMap: Record<string, string> = {};
     for (const person of Object.values(data.persons)) {
       if (person.parentIds.length === 0) {
         treeNameMap[person.name] = sample.treeName;
-        break;
       }
     }
     loadSampleData(data, treeNameMap);
@@ -78,7 +79,7 @@ export const TreeManager: React.FC = () => {
 
   const handleDeleteTree = (rootName: string, treeName: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`确定删除族谱「${treeName}」吗？此操作不可撤销。`)) return;
+    if (!window.confirm(t('confirmDeleteTree', { name: treeName }))) return;
     deleteTree(rootName);
   };
 
@@ -106,22 +107,18 @@ export const TreeManager: React.FC = () => {
 
   const hasPersons = Object.keys(persons).length > 0;
 
+  const currentSamples = getSampleTrees();
   const loadedTreeIds = new Set(availableTrees.map((t) => t.id));
-  const hasUserData = availableTrees.some(
-    (t) => !SAMPLE_TREES.some((s) => s.anchorPersonName === t.id),
-  );
-  const unloadedSamples = hasUserData
-    ? []
-    : SAMPLE_TREES.filter((s) => !loadedTreeIds.has(s.anchorPersonName));
+  const unloadedSamples = currentSamples.filter((s) => !loadedTreeIds.has(s.anchorPersonName));
 
-  const sampleAnchorNames = new Set(SAMPLE_TREES.map((s) => s.anchorPersonName));
+  const sampleAnchorNames = new Set(currentSamples.map((s) => s.anchorPersonName));
 
   return (
-    <div className="tree-mgr-overlay" role="dialog" aria-modal="true" aria-label="族谱管理">
-      <button type="button" className="tree-mgr-backdrop" onClick={handleClose} aria-label="关闭" />
+    <div className="tree-mgr-overlay" role="dialog" aria-modal="true" aria-label={t('treeManagerTitle')}>
+      <button type="button" className="tree-mgr-backdrop" onClick={handleClose} aria-label={t('close')} />
       <div className="tree-mgr-modal">
         <div className="tree-mgr-header">
-          <h2>族谱管理</h2>
+          <h2>{t('treeManagerTitle')}</h2>
           <button type="button" className="tree-mgr-close" onClick={handleClose}>
             ✕
           </button>
@@ -136,7 +133,7 @@ export const TreeManager: React.FC = () => {
               value={searchText}
               onChange={(e) => handleSearchInput(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              placeholder="输入姓名搜索族谱…"
+              placeholder={t('searchPlaceholder')}
             />
             {searchResults.length > 0 && (
               <div className="tree-mgr-search-results">
@@ -158,16 +155,43 @@ export const TreeManager: React.FC = () => {
                 className="tree-mgr-show-all-btn"
                 onClick={() => handleSearchSelect(null)}
               >
-                显示全部族谱（当前筛选：{currentTree}）
+                {t('showAllTrees', { name: currentTree })}
               </button>
             )}
           </div>
         )}
 
         <div className="tree-mgr-body">
-          {(availableTrees.length > 0 || unloadedSamples.length > 0) && (
+          {unloadedSamples.length > 0 && (
             <div className="tree-mgr-section">
-              <h3>已有族谱</h3>
+              <h3>{t('loadExample')}</h3>
+              <p className="tree-mgr-hint">{t('loadExampleDesc')}</p>
+              <div className="existing-trees">
+                {unloadedSamples.map((sample) => (
+                  <div key={sample.key} className="existing-tree-item existing-tree-item-unloaded">
+                    <div className="existing-tree-info">
+                      <span className="existing-tree-name">{sample.treeName}</span>
+                      <span className="tree-badge-sample">{t('sample')}</span>
+                    </div>
+                    <div className="existing-tree-actions">
+                      <span className="existing-tree-count">{t('personCount', { count: sample.personCount })}</span>
+                      <button
+                        type="button"
+                        className="tree-load-btn"
+                        onClick={(e) => handleLoadSample(sample.key, e)}
+                      >
+                        {t('load')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {availableTrees.length > 0 && (
+            <div className="tree-mgr-section">
+              <h3>{t('existingTrees')}</h3>
               <div className="existing-trees">
                 {availableTrees.map((tree) => {
                   const isSample = sampleAnchorNames.has(tree.id);
@@ -182,15 +206,15 @@ export const TreeManager: React.FC = () => {
                     >
                       <div className="existing-tree-info">
                         <span className="existing-tree-name">{tree.name}</span>
-                        {isSample && <span className="tree-badge-sample">样例</span>}
+                        {isSample && <span className="tree-badge-sample">{t('sample')}</span>}
                       </div>
                       <div className="existing-tree-actions">
-                        <span className="existing-tree-count">{tree.count} 人</span>
+                        <span className="existing-tree-count">{t('personCount', { count: tree.count })}</span>
                         <button
                           type="button"
                           className="tree-delete-btn"
                           onClick={(e) => handleDeleteTree(tree.id, tree.name, e)}
-                          title="删除族谱"
+                          title={t('deleteTreeTitle')}
                         >
                           ✕
                         </button>
@@ -198,59 +222,41 @@ export const TreeManager: React.FC = () => {
                     </div>
                   );
                 })}
-                {unloadedSamples.map((sample) => (
-                  <div key={sample.key} className="existing-tree-item existing-tree-item-unloaded">
-                    <div className="existing-tree-info">
-                      <span className="existing-tree-name">{sample.treeName}</span>
-                      <span className="tree-badge-sample">样例</span>
-                    </div>
-                    <div className="existing-tree-actions">
-                      <span className="existing-tree-count">{sample.personCount} 人</span>
-                      <button
-                        type="button"
-                        className="tree-load-btn"
-                        onClick={(e) => handleLoadSample(sample.key, e)}
-                      >
-                        加载
-                      </button>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           )}
 
           <div className="tree-mgr-section">
-            <h3>新建族谱</h3>
-            <p className="tree-mgr-hint">指定一个人物作为起点，并为族谱命名</p>
+            <h3>{t('createTree')}</h3>
+            <p className="tree-mgr-hint">{t('newTreeHint')}</p>
             <div className="new-tree-form">
               <div className="form-row">
-                <label htmlFor="tree-name-input">族谱名称</label>
+                <label htmlFor="tree-name-input">{t('treeName')}</label>
                 <input
                   id="tree-name-input"
                   type="text"
                   value={newTreeName}
                   onChange={(e) => setNewTreeName(e.target.value)}
-                  placeholder="例如：王氏家族"
+                  placeholder={t('treeNamePlaceholder')}
                 />
               </div>
               <div className="form-row">
-                <label htmlFor="person-name-input">核心人物</label>
+                <label htmlFor="person-name-input">{t('corePerson')}</label>
                 <div className="form-row-inline">
                   <input
                     id="person-name-input"
                     type="text"
                     value={newPersonName}
                     onChange={(e) => setNewPersonName(e.target.value)}
-                    placeholder="姓名"
+                    placeholder={t('namePlaceholder')}
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateTree()}
                   />
                   <select
                     value={newPersonGender}
                     onChange={(e) => setNewPersonGender(e.target.value as Gender)}
                   >
-                    <option value="male">男</option>
-                    <option value="female">女</option>
+                    <option value="male">{t('male')}</option>
+                    <option value="female">{t('female')}</option>
                   </select>
                 </div>
               </div>
@@ -260,7 +266,7 @@ export const TreeManager: React.FC = () => {
                 onClick={handleCreateTree}
                 disabled={!newPersonName.trim()}
               >
-                创建族谱
+                {t('createTreeBtn')}
               </button>
             </div>
           </div>
