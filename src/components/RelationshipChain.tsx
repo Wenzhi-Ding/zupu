@@ -19,7 +19,7 @@ function renderEdge(edge: ChainEdge) {
   );
 }
 
-function renderNode(node: ChainNode, onClick?: () => void) {
+function renderNode(node: ChainNode, t: (key: string) => string, onClick?: () => void) {
   return (
     <span
       className={`chain-node ${node.collapsible ? 'collapsible' : ''}`}
@@ -103,7 +103,7 @@ export const RelationshipChain: React.FC<Props> = ({ persons, path }) => {
         <span key={`branch-${node.personIds.join(',')}`} className="chain-branch-group">
           <span className="chain-branch-row">
             {renderEdge(edgeBefore)}
-            {renderNode(node, node.collapsible ? () => toggleCollapse(i) : undefined)}
+            {renderNode(node, t, node.collapsible ? () => toggleCollapse(i) : undefined)}
             {edgeAfter && renderEdge(edgeAfter)}
           </span>
           <span className="chain-branch-row">
@@ -123,7 +123,7 @@ export const RelationshipChain: React.FC<Props> = ({ persons, path }) => {
       }
       elements.push(
         <React.Fragment key={node.personIds.join(',')}>
-          {renderNode(node, node.collapsible ? () => toggleCollapse(i) : undefined)}
+          {renderNode(node, t, node.collapsible ? () => toggleCollapse(i) : undefined)}
         </React.Fragment>,
       );
     }
