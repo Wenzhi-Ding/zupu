@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Toolbar } from './components/Toolbar';
 import { FamilyTree } from './components/FamilyTree';
 import { Sidebar } from './components/Sidebar';
@@ -88,6 +89,7 @@ function App() {
       </div>
       <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
       <TreeManager />
+      <Analytics />
     </div>
   );
 }
