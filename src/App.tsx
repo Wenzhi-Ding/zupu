@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Toolbar } from './components/Toolbar';
 import { FamilyTree } from './components/FamilyTree';
 import { Sidebar } from './components/Sidebar';
@@ -90,6 +91,7 @@ function App() {
       <HelpGuide open={helpOpen} onClose={() => setHelpOpen(false)} />
       <TreeManager />
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
