@@ -252,6 +252,22 @@ const en: Record<TranslationKeys, string> = {
 
   relNonRelative: 'Not related',
   relRelative: 'Relative',
+
+  // Person images
+  setAvatar: 'Set Avatar',
+  gallery: 'Gallery',
+  uploadImage: 'Upload',
+  editGallery: 'Edit',
+  doneEditing: 'Done',
+  deleteImage: 'Delete',
+  setAsAvatar: 'Set as Avatar',
+  cropAvatar: 'Crop Avatar',
+  confirmCrop: 'Confirm',
+  galleryFull: 'Maximum 9 images',
+  noGalleryImages: 'No images yet. Click to upload.',
+  prevImage: 'Previous',
+  nextImage: 'Next',
+  dragToReorder: 'Drag to reorder',
 };
 
 export default en;

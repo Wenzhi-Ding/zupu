@@ -14,6 +14,8 @@ export interface Person {
   collapsed: boolean;
   parentCollapsed?: boolean;
   bio?: string;
+  avatarImageId?: string;
+  galleryImageIds?: string[];
 }
 
 export type RelationType = 'father' | 'mother' | 'son' | 'daughter' | 'husband' | 'wife';
@@ -26,4 +28,11 @@ export interface LayoutNode {
   y: number;
   childrenUnitIds: string[];
   collapsed: boolean;
+}
+
+export interface ImageMeta {
+  id: string;
+  personId: string;
+  format: string;
+  kind: 'avatar' | 'gallery';
 }

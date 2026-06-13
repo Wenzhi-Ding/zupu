@@ -250,6 +250,22 @@ const zh = {
 
   relNonRelative: '非亲戚',
   relRelative: '亲属',
+
+  // Person images
+  setAvatar: '设置头像',
+  gallery: '相册',
+  uploadImage: '上传图片',
+  editGallery: '编辑',
+  doneEditing: '完成',
+  deleteImage: '删除图片',
+  setAsAvatar: '设为头像',
+  cropAvatar: '裁剪头像',
+  confirmCrop: '确认',
+  galleryFull: '最多9张图片',
+  noGalleryImages: '暂无图片，点击上传',
+  prevImage: '上一张',
+  nextImage: '下一张',
+  dragToReorder: '拖动排序',
 };
 
 export default zh;
