@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 import type { Person, Gender, RelationType } from '../types';
 import { loadLocalData, saveLocalData, saveLocalDataImmediate, clearLocalData } from './localDb';
 import type { LocalData } from './localDb';
+import { deleteImagesForPerson } from './imageDb';
 
 interface TreeInfo {
   name: string;
@@ -37,7 +38,7 @@ interface FamilyState {
 
   addPerson: (name: string, gender: Gender, birthYear?: number) => string;
   removePerson: (id: string) => void;
-  updatePerson: (id: string, patch: Partial<Pick<Person, 'name' | 'gender' | 'birthYear' | 'deathYear' | 'bio' | 'title'>>) => void;
+  updatePerson: (id: string, patch: Partial<Pick<Person, 'name' | 'gender' | 'birthYear' | 'deathYear' | 'bio' | 'title' | 'avatarImageId' | 'galleryImageIds'>>) => void;
   setGeneration: (personId: string, newGeneration: number) => void;
   addRelation: (fromId: string, relationType: RelationType, newPersonName: string, newPersonGender: Gender, newPersonBirthYear?: number) => string;
   addRelationToExisting: (fromId: string, relationType: RelationType, targetId: string) => void;
@@ -285,6 +286,7 @@ export const useFamilyStore = create<FamilyState>()(
           }
 
           delete next[id];
+          deleteImagesForPerson(id);
           const update = {
             persons: next,
             selectedPersonId: state.selectedPersonId === id ? null : state.selectedPersonId,
@@ -678,6 +680,7 @@ export const useFamilyStore = create<FamilyState>()(
             }
 
             delete next[id];
+            deleteImagesForPerson(id);
           }
 
           const selectedPersonId = idSet.has(state.selectedPersonId ?? '') ? null : state.selectedPersonId;
