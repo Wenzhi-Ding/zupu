@@ -200,3 +200,7 @@
 .person-card.relation-dim .card-title {
   opacity: 0.3;
 }
+
+.card-avatar {
+  pointer-events: none;
+}
