@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useFamilyStore } from '../store/familyStore';
 import { RelationEditor } from './RelationEditor';
 import { useT } from '../i18n';
+import { useAvatarUrl } from '../hooks/useImageUrl';
+import { CropModal } from './CropModal';
+import { GalleryModal } from './GalleryModal';
 import './Sidebar.css';
 
 export const Sidebar: React.FC = () => {
@@ -22,6 +25,13 @@ export const Sidebar: React.FC = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editDeathYear, setEditDeathYear] = useState('');
+
+  const [showCrop, setShowCrop] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [avatarFileUrl, setAvatarFileUrl] = useState<string | null>(null);
+  const [avatarFileBlob, setAvatarFileBlob] = useState<Blob | null>(null);
+  const avatarUrl = useAvatarUrl(person?.id);
+  const avatarFileRef = useRef<HTMLInputElement>(null);
 
   if (!person) {
     return null;
@@ -54,6 +64,23 @@ export const Sidebar: React.FC = () => {
       removePerson(person.id);
       selectPerson(null);
     }
+  };
+
+  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setAvatarFileUrl(url);
+    setAvatarFileBlob(file);
+    setShowCrop(true);
+    if (avatarFileRef.current) avatarFileRef.current.value = '';
+  };
+
+  const closeCrop = () => {
+    setShowCrop(false);
+    if (avatarFileUrl) URL.revokeObjectURL(avatarFileUrl);
+    setAvatarFileUrl(null);
+    setAvatarFileBlob(null);
   };
 
   return (
@@ -124,6 +151,38 @@ export const Sidebar: React.FC = () => {
           </div>
         ) : (
           <>
+            <div className="sidebar-avatar-section">
+              <div className="sidebar-avatar" onClick={() => setShowGallery(true)}>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={person.name} />
+                ) : (
+                  <div className="sidebar-avatar-placeholder">
+                    {person.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div className="sidebar-avatar-buttons">
+                <button
+                  className="sidebar-avatar-btn"
+                  onClick={() => avatarFileRef.current?.click()}
+                >
+                  {t('setAvatar')}
+                </button>
+                <button
+                  className="sidebar-avatar-btn"
+                  onClick={() => setShowGallery(true)}
+                >
+                  {t('gallery')}
+                </button>
+              </div>
+              <input
+                ref={avatarFileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleAvatarFile}
+              />
+            </div>
             <div className="sidebar-info">
               <div className="info-row">
                 <span className="info-label">{t('gender')}</span>
@@ -185,6 +244,20 @@ export const Sidebar: React.FC = () => {
               <button className="btn-edit" onClick={startEdit}>{t('edit')}</button>
               <button className="btn-delete" onClick={handleDelete}>{t('delete')}</button>
             </div>
+            {showCrop && avatarFileUrl && avatarFileBlob && (
+              <CropModal
+                personId={person.id}
+                sourceUrl={avatarFileUrl}
+                sourceBlob={avatarFileBlob}
+                onClose={closeCrop}
+              />
+            )}
+            {showGallery && (
+              <GalleryModal
+                personId={person.id}
+                onClose={() => setShowGallery(false)}
+              />
+            )}
           </>
         )}
       </div>
