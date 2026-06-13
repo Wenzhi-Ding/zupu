@@ -17,6 +17,7 @@ export default defineConfig({
         'src/layout/**/*.ts',
         'src/utils/**/*.ts',
         'src/i18n/**/*.ts',
+        'src/hooks/**/*.ts',
       ],
       exclude: [
         'src/test/**',
