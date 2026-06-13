@@ -725,6 +725,54 @@ const KINSHIP_RULES: KinshipRule[] = [
     },
   },
 
+  // === Great-aunt/uncle-in-law (start is grandchild-in-law of end's sibling's parent): UUUDS ===
+  {
+    match: exactMatch('UUUDS'),
+    emit: (ctx) => {
+      // The "sibling" step is the parent direction just before the spouse.
+      const dSteps = ctx.steps.filter(s => s.dir === 'parent');
+      const siblingId = dSteps[dSteps.length - 1]?.toId;
+      const sibling = siblingId ? ctx.persons[siblingId] : undefined;
+      const sibGender = sibling?.gender ?? 'unknown';
+
+      if (sibGender === 'female') {
+        return genderLabel(ctx.sg,
+          'relGrandsonOfGreatAuntMaternal',
+          'relGranddaughterOfGreatAuntMaternal',
+          'relGrandsonOfGreatAuntGeneral');
+      }
+      if (sibGender === 'male') {
+        return genderLabel(ctx.sg,
+          'relGrandsonOfGreatUncleMaternal',
+          'relGranddaughterOfGreatUncleMaternal',
+          'relGrandsonOfGreatUncleGeneral');
+      }
+      return genderLabel(ctx.sg,
+        'relGrandsonOfGreatAuntGeneral',
+        'relGranddaughterOfGreatAuntGeneral');
+    },
+  },
+
+  // === Grandchild-in-law of sibling (start is great-aunt/uncle-in-law of end): SUDDD ===
+  {
+    match: exactMatch('SUDDD'),
+    emit: (ctx) => {
+      // The sibling of end is reached by the first parent step after the spouse step.
+      const dSteps = ctx.steps.filter(s => s.dir === 'parent');
+      const siblingId = dSteps[0]?.toId;
+      const sibling = siblingId ? ctx.persons[siblingId] : undefined;
+      const sibGender = sibling?.gender ?? 'unknown';
+
+      if (sibGender === 'female') {
+        return genderLabel(ctx.sg, 'relGreatAuntHusbandMaternal', 'relGreatAuntHusbandMaternal');
+      }
+      if (sibGender === 'male') {
+        return genderLabel(ctx.sg, 'relGreatUncleWifeMaternal', 'relGreatUncleWifeMaternal');
+      }
+      return genderLabel(ctx.sg, 'relGreatAuntHusbandGeneral', 'relGreatUncleWifeGeneral');
+    },
+  },
+
   // === Spouse's sibling's spouse (妯娌/连襟): SUDS ===
   {
     match: exactMatch('SUDS'),
@@ -798,6 +846,16 @@ export function computeVisibleChain(
   const visibleEdges: ChainEdge[] = [];
   let lastVisibleIdx = -1;
 
+  // Pre-compute the next visible index for each visible node so that branch
+  // spouses can have their outgoing edge recomposed when middle nodes collapse.
+  const nextVisibleIdx = new Array(fullChain.nodes.length).fill(-1);
+  let prevVisibleIdx = -1;
+  for (let i = 0; i < fullChain.nodes.length; i++) {
+    if (fullChain.nodes[i].collapsed) continue;
+    if (prevVisibleIdx !== -1) nextVisibleIdx[prevVisibleIdx] = i;
+    prevVisibleIdx = i;
+  }
+
   for (let i = 0; i < fullChain.nodes.length; i++) {
     const node = fullChain.nodes[i];
     if (node.collapsed) continue;
@@ -814,10 +872,36 @@ export function computeVisibleChain(
       }
       visibleEdges.push({ label: edgeLabel });
 
-      if (node.branch && i !== lastVisibleIdx + 1) {
+      const nextVis = nextVisibleIdx[i];
+      const recomposeBefore = node.branch && i !== lastVisibleIdx + 1;
+      const recomposeAfter = node.branch && nextVis !== -1 && nextVis !== i + 1;
+
+      if (recomposeBefore || recomposeAfter) {
+        let edgeAfterLabel = node.branch!.edgeAfter;
+        if (recomposeAfter) {
+          // The branch spouse replaces the current node for the outgoing segment.
+          const segmentIds = fullChain.nodes
+            .slice(i + 1, nextVis + 1)
+            .map((n) => n.personIds[0]);
+          const spouseId = node.branch!.personId;
+          const spouseChain = buildChain(persons, [spouseId, ...segmentIds]);
+          edgeAfterLabel = composeRelationshipLabel(
+            persons,
+            spouseChain,
+            0,
+            spouseChain.nodes.length - 1,
+          );
+        }
+
         visibleNodes.push({
           ...node,
-          branch: { ...node.branch, edgeBefore: edgeLabel },
+          branch: {
+            ...node.branch!,
+            edgeBefore: recomposeBefore
+              ? edgeLabel
+              : node.branch!.edgeBefore,
+            edgeAfter: edgeAfterLabel,
+          },
         });
       } else {
         visibleNodes.push(node);

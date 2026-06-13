@@ -287,4 +287,73 @@ describe('computeVisibleChain', () => {
     expect(visible.nodes[1].branch!.personId).toBe('grandma');
     expect(visible.nodes[2].label).toBe('Alice');
   });
+
+  it('recomposes branch edgeAfter when the next visible node is collapsed over', () => {
+    // Anonymous family:
+    // childA → parentA → grandparentA → greatGrandmotherA ─┬─ greatGrandfatherA
+    //                                                       │
+    //                                              grandAuntA → grandUncleInLawA
+    const childA = makePerson({ id: 'childA', name: 'ChildA', gender: 'male', parentIds: ['parentA', 'parentASpouse'] });
+    const parentASpouse = makePerson({ id: 'parentASpouse', name: 'ParentASpouse', gender: 'female', spouseIds: ['parentA'], childrenIds: ['childA'] });
+    const parentA = makePerson({ id: 'parentA', name: 'ParentA', gender: 'male', spouseIds: ['parentASpouse'], parentIds: ['grandparentA', 'grandparentASpouse'], childrenIds: ['childA'] });
+    const grandparentASpouse = makePerson({ id: 'grandparentASpouse', name: 'GrandparentASpouse', gender: 'male', spouseIds: ['grandparentA'], childrenIds: ['parentA'] });
+    const grandparentA = makePerson({ id: 'grandparentA', name: 'GrandparentA', gender: 'female', spouseIds: ['grandparentASpouse'], parentIds: ['greatGrandmotherA', 'greatGrandfatherA'], childrenIds: ['parentA'] });
+    const greatGrandmotherA = makePerson({ id: 'greatGrandmotherA', name: 'GreatGrandmotherA', gender: 'female', spouseIds: ['greatGrandfatherA'], childrenIds: ['grandparentA', 'grandAuntA'] });
+    const greatGrandfatherA = makePerson({ id: 'greatGrandfatherA', name: 'GreatGrandfatherA', gender: 'male', spouseIds: ['greatGrandmotherA'], childrenIds: ['grandparentA', 'grandAuntA'] });
+    const grandAuntA = makePerson({ id: 'grandAuntA', name: 'GrandAuntA', gender: 'female', spouseIds: ['grandUncleInLawA'], parentIds: ['greatGrandmotherA', 'greatGrandfatherA'] });
+    const grandUncleInLawA = makePerson({ id: 'grandUncleInLawA', name: 'GrandUncleInLawA', gender: 'male', spouseIds: ['grandAuntA'] });
+
+    const family: Record<string, Person> = {
+      childA, parentASpouse, parentA, grandparentASpouse, grandparentA,
+      greatGrandmotherA, greatGrandfatherA, grandAuntA, grandUncleInLawA,
+    };
+
+    const chain = buildChain(family, ['childA', 'parentA', 'grandparentA', 'greatGrandmotherA', 'grandAuntA', 'grandUncleInLawA']);
+    expect(chain.nodes[3].branch).toBeDefined();
+    expect(chain.nodes[3].branch!.personId).toBe('greatGrandfatherA');
+
+    chain.nodes[1].collapsed = true;
+    chain.nodes[2].collapsed = true;
+    chain.nodes[4].collapsed = true;
+
+    const visible = computeVisibleChain(family, chain);
+    expect(visible.nodes).toHaveLength(3);
+    expect(visible.nodes[1].label).toBe('GreatGrandmotherA');
+    expect(visible.nodes[1].branch!.personId).toBe('greatGrandfatherA');
+
+    // greatGrandmotherA → grandUncleInLawA should be mother-in-law (DS pattern)
+    expect(visible.edges[1].label).toBe('relMotherInLawWifeSide');
+    // greatGrandfatherA → grandUncleInLawA should be father-in-law
+    expect(visible.nodes[1].branch!.edgeAfter).toBe('relFatherInLawWifeSide');
+    // childA → greatGrandfatherA should still be great-grandson
+    expect(visible.nodes[1].branch!.edgeBefore).toBe('relGreatGrandson');
+  });
+
+  it('labels great-aunt/uncle-in-law and grandchild-in-law correctly', () => {
+    // Anonymous family with the same UUUDS / SUDDD structure
+    const childB = makePerson({ id: 'childB', name: 'ChildB', gender: 'male', parentIds: ['parentB', 'parentBSpouse'] });
+    const parentBSpouse = makePerson({ id: 'parentBSpouse', name: 'ParentBSpouse', gender: 'female', spouseIds: ['parentB'], childrenIds: ['childB'] });
+    const parentB = makePerson({ id: 'parentB', name: 'ParentB', gender: 'male', spouseIds: ['parentBSpouse'], parentIds: ['grandparentB', 'grandparentBSpouse'], childrenIds: ['childB'] });
+    const grandparentBSpouse = makePerson({ id: 'grandparentBSpouse', name: 'GrandparentBSpouse', gender: 'male', spouseIds: ['grandparentB'], childrenIds: ['parentB'] });
+    const grandparentB = makePerson({ id: 'grandparentB', name: 'GrandparentB', gender: 'female', spouseIds: ['grandparentBSpouse'], parentIds: ['greatGrandmotherB', 'greatGrandfatherB'], childrenIds: ['parentB'] });
+    const greatGrandmotherB = makePerson({ id: 'greatGrandmotherB', name: 'GreatGrandmotherB', gender: 'female', spouseIds: ['greatGrandfatherB'], childrenIds: ['grandparentB', 'grandAuntB'] });
+    const greatGrandfatherB = makePerson({ id: 'greatGrandfatherB', name: 'GreatGrandfatherB', gender: 'male', spouseIds: ['greatGrandmotherB'], childrenIds: ['grandparentB', 'grandAuntB'] });
+    const grandAuntB = makePerson({ id: 'grandAuntB', name: 'GrandAuntB', gender: 'female', spouseIds: ['grandUncleInLawB'], parentIds: ['greatGrandmotherB', 'greatGrandfatherB'] });
+    const grandUncleInLawB = makePerson({ id: 'grandUncleInLawB', name: 'GrandUncleInLawB', gender: 'male', spouseIds: ['grandAuntB'] });
+
+    const family: Record<string, Person> = {
+      childB, parentBSpouse, parentB, grandparentBSpouse, grandparentB,
+      greatGrandmotherB, greatGrandfatherB, grandAuntB, grandUncleInLawB,
+    };
+
+    function labelFor(path: string[], fromIdx: number, toIdx: number): string {
+      const chain = buildChain(family, path);
+      return composeRelationshipLabel(family, chain, fromIdx, toIdx);
+    }
+
+    // childB (male) → grandUncleInLawB: UUUDS → grandson of great-aunt (maternal side)
+    expect(labelFor(['childB', 'parentB', 'grandparentB', 'greatGrandmotherB', 'grandAuntB', 'grandUncleInLawB'], 0, 5)).toBe('relGrandsonOfGreatAuntMaternal');
+    // grandUncleInLawB → childB: SUDDD → great-aunt's husband (maternal side)
+    expect(labelFor(['grandUncleInLawB', 'grandAuntB', 'greatGrandmotherB', 'grandparentB', 'parentB', 'childB'], 0, 5)).toBe('relGreatAuntHusbandMaternal');
+  });
 });

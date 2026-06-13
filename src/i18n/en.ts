@@ -228,6 +228,28 @@ const en: Record<TranslationKeys, string> = {
   relSisterInLaw: 'Co-sister-in-law',
   relBrotherInLaw: 'Co-brother-in-law',
   relSisterInLawGeneral3: 'In-law',
+
+  // Great-aunt/uncle-in-law and their grandchildren-in-law
+  relGreatAuntHusbandMaternal: 'Great-uncle',
+  relGreatAuntHusbandPaternal: 'Great-uncle',
+  relGreatUncleWifeMaternal: 'Great-aunt',
+  relGreatUncleWifePaternal: 'Great-aunt',
+  relGreatAuntHusbandGeneral: 'Great-uncle',
+  relGreatUncleWifeGeneral: 'Great-aunt',
+
+  relGrandsonOfGreatAuntMaternal: 'Grandnephew',
+  relGrandsonOfGreatAuntPaternal: 'Grandnephew',
+  relGrandsonOfGreatUncleMaternal: 'Grandnephew',
+  relGrandsonOfGreatUnclePaternal: 'Grandnephew',
+  relGrandsonOfGreatAuntGeneral: 'Grandnephew',
+  relGrandsonOfGreatUncleGeneral: 'Grandnephew',
+  relGranddaughterOfGreatAuntMaternal: 'Grandniece',
+  relGranddaughterOfGreatAuntPaternal: 'Grandniece',
+  relGranddaughterOfGreatUncleMaternal: 'Grandniece',
+  relGranddaughterOfGreatUnclePaternal: 'Grandniece',
+  relGranddaughterOfGreatAuntGeneral: 'Grandniece',
+  relGranddaughterOfGreatUncleGeneral: 'Grandniece',
+
   relNonRelative: 'Not related',
   relRelative: 'Relative',
 };

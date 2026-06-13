@@ -226,6 +226,28 @@ const zh = {
   relSisterInLaw: '妯娌',
   relBrotherInLaw: '连襟',
   relSisterInLawGeneral3: '妯娌/连襟',
+
+  // Great-aunt/uncle-in-law and their grandchildren-in-law
+  relGreatAuntHusbandMaternal: '姨姥爷',
+  relGreatAuntHusbandPaternal: '姑姥爷',
+  relGreatUncleWifeMaternal: '舅姥姥',
+  relGreatUncleWifePaternal: '叔伯姥姥',
+  relGreatAuntHusbandGeneral: '姨姥爷/姑姥爷',
+  relGreatUncleWifeGeneral: '舅姥姥/叔伯姥姥',
+
+  relGrandsonOfGreatAuntMaternal: '姨外孙',
+  relGrandsonOfGreatAuntPaternal: '姑外孙',
+  relGrandsonOfGreatUncleMaternal: '舅外孙',
+  relGrandsonOfGreatUnclePaternal: '叔伯外孙',
+  relGrandsonOfGreatAuntGeneral: '姨外孙/姑外孙',
+  relGrandsonOfGreatUncleGeneral: '舅外孙/叔伯外孙',
+  relGranddaughterOfGreatAuntMaternal: '姨外孙女',
+  relGranddaughterOfGreatAuntPaternal: '姑外孙女',
+  relGranddaughterOfGreatUncleMaternal: '舅外孙女',
+  relGranddaughterOfGreatUnclePaternal: '叔伯外孙女',
+  relGranddaughterOfGreatAuntGeneral: '姨外孙女/姑外孙女',
+  relGranddaughterOfGreatUncleGeneral: '舅外孙女/叔伯外孙女',
+
   relNonRelative: '非亲戚',
   relRelative: '亲属',
 };
