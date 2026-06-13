@@ -3,13 +3,10 @@ import { getImage } from '../store/imageDb';
 import { useFamilyStore } from '../store/familyStore';
 
 export function useImageUrl(imageId: string | undefined): string | null {
-  const [url, setUrl] = useState<string | null>(null);
+  const [state, setState] = useState<{ id: string | undefined; url: string | null }>({ id: undefined, url: null });
 
   useEffect(() => {
-    if (!imageId) {
-      setUrl(null);
-      return;
-    }
+    if (!imageId) return;
 
     let objectUrl: string | null = null;
     let cancelled = false;
@@ -18,9 +15,9 @@ export function useImageUrl(imageId: string | undefined): string | null {
       if (cancelled) return;
       if (result) {
         objectUrl = URL.createObjectURL(result.blob);
-        setUrl(objectUrl);
+        setState({ id: imageId, url: objectUrl });
       } else {
-        setUrl(null);
+        setState({ id: imageId, url: null });
       }
     });
 
@@ -30,7 +27,7 @@ export function useImageUrl(imageId: string | undefined): string | null {
     };
   }, [imageId]);
 
-  return url;
+  return state.id === imageId ? state.url : null;
 }
 
 export function useAvatarUrl(personId: string | undefined): string | null {

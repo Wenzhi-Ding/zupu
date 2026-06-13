@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import JSZip from 'jszip';
 import { useFamilyStore } from './familyStore';
-import { exportData, importData, extractImageMeta, saveLocalDataImmediate } from './localDb';
+import { importData, extractImageMeta, saveLocalDataImmediate } from './localDb';
 import {
   getAllImagesForExport,
   bulkImportImages,
@@ -39,7 +39,7 @@ export function useDataIO() {
     }
 
     const exportPayload = { ...baseData, images: imagesMeta };
-    const jsonStr = exportData(exportPayload as any);
+    const jsonStr = JSON.stringify(exportPayload, null, 2);
 
     const zip = new JSZip();
     zip.file('data.json', jsonStr);
