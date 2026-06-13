@@ -6,6 +6,7 @@ import {
   clearLocalData,
   exportData,
   importData,
+  extractImageMeta,
   type LocalData,
 } from './localDb';
 
@@ -335,5 +336,73 @@ describe('saveLocalData', () => {
     vi.advanceTimersByTime(100);
     expect(setItemSpy).toHaveBeenCalledTimes(1);
     expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, JSON.stringify(data2));
+  });
+});
+
+describe('avatarImageId / galleryImageIds validation', () => {
+  it('accepts valid avatarImageId', () => {
+    const person = createValidPerson({ avatarImageId: 'img1' });
+    const data = { ...createValidLocalData(), persons: { p1: person } };
+    const result = importData(JSON.stringify(data));
+    expect(result.persons.p1.avatarImageId).toBe('img1');
+  });
+
+  it('accepts valid galleryImageIds', () => {
+    const person = createValidPerson({ galleryImageIds: ['img1', 'img2'] });
+    const data = { ...createValidLocalData(), persons: { p1: person } };
+    const result = importData(JSON.stringify(data));
+    expect(result.persons.p1.galleryImageIds).toEqual(['img1', 'img2']);
+  });
+
+  it('throws on non-string avatarImageId', () => {
+    const person = createValidPerson({ avatarImageId: 123 });
+    const data = { ...createValidLocalData(), persons: { p1: person } };
+    expect(() => importData(JSON.stringify(data))).toThrow('avatarImageId must be a string');
+  });
+
+  it('throws on non-array galleryImageIds', () => {
+    const person = createValidPerson({ galleryImageIds: 'bad' });
+    const data = { ...createValidLocalData(), persons: { p1: person } };
+    expect(() => importData(JSON.stringify(data))).toThrow('galleryImageIds must be a string array');
+  });
+
+  it('throws on galleryImageIds with non-string elements', () => {
+    const person = createValidPerson({ galleryImageIds: ['ok', 5] });
+    const data = { ...createValidLocalData(), persons: { p1: person } };
+    expect(() => importData(JSON.stringify(data))).toThrow('galleryImageIds must be a string array');
+  });
+
+  it('works without avatarImageId/galleryImageIds (backward compat)', () => {
+    const data = createValidLocalData();
+    const result = importData(JSON.stringify(data));
+    expect(result.persons.p1.avatarImageId).toBeUndefined();
+    expect(result.persons.p1.galleryImageIds).toBeUndefined();
+  });
+});
+
+describe('extractImageMeta', () => {
+  it('returns undefined when no images field', () => {
+    expect(extractImageMeta({ persons: {} })).toBeUndefined();
+  });
+
+  it('parses valid images map', () => {
+    const parsed = {
+      images: {
+        img1: { id: 'img1', personId: 'p1', format: 'jpeg', kind: 'gallery' },
+      },
+    };
+    const result = extractImageMeta(parsed);
+    expect(result).toEqual({
+      img1: { id: 'img1', personId: 'p1', format: 'jpeg', kind: 'gallery' },
+    });
+  });
+
+  it('throws on invalid kind', () => {
+    const parsed = {
+      images: {
+        img1: { id: 'img1', personId: 'p1', format: 'jpeg', kind: 'bad' },
+      },
+    };
+    expect(() => extractImageMeta(parsed)).toThrow('kind must be avatar|gallery');
   });
 });

@@ -1,4 +1,5 @@
 import type { Person, Gender } from '../types';
+import type { ImageMeta } from '../types';
 
 const STORAGE_KEY = 'genealogy_data';
 
@@ -14,7 +15,8 @@ function validatePerson(raw: unknown, key: string): Person {
   }
 
   const { id, name, gender, birthYear, deathYear, title, generation,
-          spouseIds, childrenIds, parentIds, collapsed, parentCollapsed, bio } = raw;
+          spouseIds, childrenIds, parentIds, collapsed, parentCollapsed, bio,
+          avatarImageId, galleryImageIds } = raw;
 
   if (typeof id !== 'string' || !id) {
     throw new Error(`Invalid person "${key}": id must be a non-empty string`);
@@ -40,6 +42,14 @@ function validatePerson(raw: unknown, key: string): Person {
   }
   if (bio !== undefined && typeof bio !== 'string') {
     throw new Error(`Invalid person "${key}": bio must be a string if provided`);
+  }
+  if (avatarImageId !== undefined && typeof avatarImageId !== 'string') {
+    throw new Error(`Invalid person "${key}": avatarImageId must be a string if provided`);
+  }
+  if (galleryImageIds !== undefined) {
+    if (!Array.isArray(galleryImageIds) || !galleryImageIds.every((g): g is string => typeof g === 'string')) {
+      throw new Error(`Invalid person "${key}": galleryImageIds must be a string array if provided`);
+    }
   }
 
   if (!Array.isArray(spouseIds)) {
@@ -76,6 +86,8 @@ function validatePerson(raw: unknown, key: string): Person {
     ...(title !== undefined ? { title } : {}),
     ...(parentCollapsed !== undefined && typeof parentCollapsed === 'boolean' ? { parentCollapsed } : {}),
     ...(bio !== undefined ? { bio } : {}),
+    ...(avatarImageId !== undefined ? { avatarImageId } : {}),
+    ...(galleryImageIds !== undefined ? { galleryImageIds } : {}),
   };
 }
 
@@ -190,4 +202,24 @@ export function importData(json: string): LocalData {
     currentTree: typeof parsed.currentTree === 'string' ? parsed.currentTree : null,
     treeNames: parsed.treeNames ? validateStringRecord(parsed.treeNames, 'treeNames') : {},
   };
+}
+
+export function extractImageMeta(parsed: unknown): Record<string, ImageMeta> | undefined {
+  if (!isPlainObject(parsed)) return undefined;
+  const raw = (parsed as Record<string, unknown>).images;
+  if (raw === undefined) return undefined;
+  if (!isPlainObject(raw)) throw new Error('Invalid data format: images must be an object');
+  const result: Record<string, ImageMeta> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (!isPlainObject(v)) throw new Error(`Invalid data format: images["${k}"] must be an object`);
+    const { id, personId, format, kind } = v as Record<string, unknown>;
+    if (typeof id !== 'string' || typeof personId !== 'string' || typeof format !== 'string') {
+      throw new Error(`Invalid data format: images["${k}"] has invalid metadata`);
+    }
+    if (kind !== 'avatar' && kind !== 'gallery') {
+      throw new Error(`Invalid data format: images["${k}"] kind must be avatar|gallery`);
+    }
+    result[k] = { id, personId, format, kind };
+  }
+  return result;
 }
