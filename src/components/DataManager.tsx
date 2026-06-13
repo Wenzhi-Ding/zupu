@@ -17,7 +17,7 @@ export const DataManager = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".json"
+        accept=".json,.zip"
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
