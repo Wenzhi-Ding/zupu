@@ -1,11 +1,16 @@
 export type Gender = 'male' | 'female' | 'unknown';
+export type CalendarType = 'solar' | 'lunar';
 
 export interface Person {
   id: string;
   name: string;
   gender: Gender;
   birthYear?: number;
+  birthDate?: string;
   deathYear?: string;
+  deathDate?: string;
+  birthCalendarType?: CalendarType;
+  deathCalendarType?: CalendarType;
   title?: string;
   generation: number;
   spouseIds: string[];

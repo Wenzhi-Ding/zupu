@@ -113,6 +113,62 @@
   box-sizing: border-box;
 }
 
+.sidebar-edit .form-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.sidebar-edit .form-group-header label {
+  font-size: 13px;
+  color: #888;
+}
+
+.sidebar-edit .field-row {
+  display: flex;
+  gap: 6px;
+}
+
+.sidebar-edit .field-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.calendar-toggle {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.calendar-toggle button {
+  padding: 2px 8px;
+  border: none;
+  background: white;
+  color: #888;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.calendar-toggle button:first-child {
+  border-right: 1px solid #ddd;
+}
+
+.calendar-toggle button.active {
+  background: #4a90d9;
+  color: white;
+}
+
 .btn-edit {
   flex: 1;
   padding: 8px;

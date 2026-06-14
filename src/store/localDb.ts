@@ -1,9 +1,10 @@
-import type { Person, Gender } from '../types';
+import type { Person, Gender, CalendarType } from '../types';
 import type { ImageMeta } from '../types';
 
 const STORAGE_KEY = 'genealogy_data';
 
 const VALID_GENDERS = new Set<string>(['male', 'female', 'unknown']);
+const VALID_CALENDAR_TYPES = new Set<string>(['solar', 'lunar']);
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -14,7 +15,7 @@ function validatePerson(raw: unknown, key: string): Person {
     throw new Error(`Invalid person entry "${key}": expected object`);
   }
 
-  const { id, name, gender, birthYear, deathYear, title, generation,
+  const { id, name, gender, birthYear, birthDate, deathYear, deathDate, birthCalendarType, deathCalendarType, title, generation,
           spouseIds, childrenIds, parentIds, collapsed, parentCollapsed, bio,
           avatarImageId, galleryImageIds } = raw;
 
@@ -34,8 +35,20 @@ function validatePerson(raw: unknown, key: string): Person {
   if (birthYear !== undefined && (typeof birthYear !== 'number' || !Number.isFinite(birthYear))) {
     throw new Error(`Invalid person "${key}": birthYear must be a finite number if provided`);
   }
+  if (birthDate !== undefined && typeof birthDate !== 'string') {
+    throw new Error(`Invalid person "${key}": birthDate must be a string if provided`);
+  }
   if (deathYear !== undefined && typeof deathYear !== 'string') {
     throw new Error(`Invalid person "${key}": deathYear must be a string if provided`);
+  }
+  if (deathDate !== undefined && typeof deathDate !== 'string') {
+    throw new Error(`Invalid person "${key}": deathDate must be a string if provided`);
+  }
+  if (birthCalendarType !== undefined && (typeof birthCalendarType !== 'string' || !VALID_CALENDAR_TYPES.has(birthCalendarType))) {
+    throw new Error(`Invalid person "${key}": birthCalendarType must be solar|lunar if provided`);
+  }
+  if (deathCalendarType !== undefined && (typeof deathCalendarType !== 'string' || !VALID_CALENDAR_TYPES.has(deathCalendarType))) {
+    throw new Error(`Invalid person "${key}": deathCalendarType must be solar|lunar if provided`);
   }
   if (title !== undefined && typeof title !== 'string') {
     throw new Error(`Invalid person "${key}": title must be a string if provided`);
@@ -82,7 +95,11 @@ function validatePerson(raw: unknown, key: string): Person {
     parentIds,
     collapsed: typeof collapsed === 'boolean' ? collapsed : false,
     ...(birthYear !== undefined ? { birthYear } : {}),
+    ...(birthDate !== undefined ? { birthDate } : {}),
     ...(deathYear !== undefined ? { deathYear } : {}),
+    ...(deathDate !== undefined ? { deathDate } : {}),
+    ...(birthCalendarType !== undefined ? { birthCalendarType: birthCalendarType as CalendarType } : {}),
+    ...(deathCalendarType !== undefined ? { deathCalendarType: deathCalendarType as CalendarType } : {}),
     ...(title !== undefined ? { title } : {}),
     ...(parentCollapsed !== undefined && typeof parentCollapsed === 'boolean' ? { parentCollapsed } : {}),
     ...(bio !== undefined ? { bio } : {}),

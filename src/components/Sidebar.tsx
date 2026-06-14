@@ -5,6 +5,7 @@ import { useT } from '../i18n';
 import { useAvatarUrl } from '../hooks/useImageUrl';
 import { CropModal } from './CropModal';
 import { GalleryModal } from './GalleryModal';
+import type { CalendarType } from '../types';
 import './Sidebar.css';
 
 export const Sidebar: React.FC = () => {
@@ -21,10 +22,16 @@ export const Sidebar: React.FC = () => {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBirthYear, setEditBirthYear] = useState('');
+  const [editBirthMonth, setEditBirthMonth] = useState('');
+  const [editBirthDay, setEditBirthDay] = useState('');
   const [editGender, setEditGender] = useState<'male' | 'female' | 'unknown'>('unknown');
   const [editTitle, setEditTitle] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editDeathYear, setEditDeathYear] = useState('');
+  const [editDeathMonth, setEditDeathMonth] = useState('');
+  const [editDeathDay, setEditDeathDay] = useState('');
+  const [editBirthCalendarType, setEditBirthCalendarType] = useState<CalendarType>('solar');
+  const [editDeathCalendarType, setEditDeathCalendarType] = useState<CalendarType>('solar');
 
   const [showCrop, setShowCrop] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
@@ -40,18 +47,36 @@ export const Sidebar: React.FC = () => {
   const startEdit = () => {
     setEditName(person.name);
     setEditBirthYear(person.birthYear?.toString() ?? '');
+    const bdParts = (person.birthDate ?? '').split('/');
+    setEditBirthMonth(bdParts[0] ?? '');
+    setEditBirthDay(bdParts[1] ?? '');
     setEditGender(person.gender);
     setEditTitle(person.title ?? '');
     setEditBio(person.bio ?? '');
     setEditDeathYear(person.deathYear ?? '');
+    const ddParts = (person.deathDate ?? '').split('/');
+    setEditDeathMonth(ddParts[0] ?? '');
+    setEditDeathDay(ddParts[1] ?? '');
+    setEditBirthCalendarType(person.birthCalendarType ?? 'solar');
+    setEditDeathCalendarType(person.deathCalendarType ?? 'solar');
     setEditing(true);
   };
 
   const saveEdit = () => {
+    const birthDate = (editBirthMonth.trim() || editBirthDay.trim())
+      ? `${editBirthMonth.trim()}/${editBirthDay.trim()}`
+      : undefined;
+    const deathDate = (editDeathMonth.trim() || editDeathDay.trim())
+      ? `${editDeathMonth.trim()}/${editDeathDay.trim()}`
+      : undefined;
     updatePerson(person.id, {
       name: editName.trim() || person.name,
       birthYear: editBirthYear ? parseInt(editBirthYear, 10) : undefined,
+      birthDate,
       deathYear: editDeathYear.trim() || undefined,
+      deathDate,
+      birthCalendarType: editBirthCalendarType,
+      deathCalendarType: editDeathCalendarType,
       gender: editGender,
       title: editTitle.trim() || undefined,
       bio: editBio.trim() || undefined,
@@ -117,22 +142,86 @@ export const Sidebar: React.FC = () => {
               />
             </div>
             <div className="form-group">
-              <label>{t('birthYear')}</label>
-              <input
-                type="number"
-                value={editBirthYear}
-                onChange={(e) => setEditBirthYear(e.target.value)}
-                placeholder={t('birthYearPlaceholder')}
-              />
+              <div className="form-group-header">
+                <label>{t('birthYear')}</label>
+                <div className="calendar-toggle">
+                  <button
+                    type="button"
+                    className={editBirthCalendarType === 'solar' ? 'active' : ''}
+                    onClick={() => setEditBirthCalendarType('solar')}
+                  >
+                    {t('solar')}
+                  </button>
+                  <button
+                    type="button"
+                    className={editBirthCalendarType === 'lunar' ? 'active' : ''}
+                    onClick={() => setEditBirthCalendarType('lunar')}
+                  >
+                    {t('lunar')}
+                  </button>
+                </div>
+              </div>
+              <div className="field-row">
+                <input
+                  type="number"
+                  value={editBirthYear}
+                  onChange={(e) => setEditBirthYear(e.target.value)}
+                  placeholder={t('birthYearPlaceholder')}
+                />
+                <input
+                  type="text"
+                  value={editBirthMonth}
+                  onChange={(e) => setEditBirthMonth(e.target.value)}
+                  placeholder={t('monthPlaceholder')}
+                />
+                <input
+                  type="text"
+                  value={editBirthDay}
+                  onChange={(e) => setEditBirthDay(e.target.value)}
+                  placeholder={t('dayPlaceholder')}
+                />
+              </div>
             </div>
             <div className="form-group">
-              <label>{t('deathYear')}</label>
-              <input
-                type="text"
-                value={editDeathYear}
-                onChange={(e) => setEditDeathYear(e.target.value)}
-                placeholder={t('deathYearPlaceholder')}
-              />
+              <div className="form-group-header">
+                <label>{t('deathYear')}</label>
+                <div className="calendar-toggle">
+                  <button
+                    type="button"
+                    className={editDeathCalendarType === 'solar' ? 'active' : ''}
+                    onClick={() => setEditDeathCalendarType('solar')}
+                  >
+                    {t('solar')}
+                  </button>
+                  <button
+                    type="button"
+                    className={editDeathCalendarType === 'lunar' ? 'active' : ''}
+                    onClick={() => setEditDeathCalendarType('lunar')}
+                  >
+                    {t('lunar')}
+                  </button>
+                </div>
+              </div>
+              <div className="field-row">
+                <input
+                  type="text"
+                  value={editDeathYear}
+                  onChange={(e) => setEditDeathYear(e.target.value)}
+                  placeholder={t('deathYearPlaceholder')}
+                />
+                <input
+                  type="text"
+                  value={editDeathMonth}
+                  onChange={(e) => setEditDeathMonth(e.target.value)}
+                  placeholder={t('monthPlaceholder')}
+                />
+                <input
+                  type="text"
+                  value={editDeathDay}
+                  onChange={(e) => setEditDeathDay(e.target.value)}
+                  placeholder={t('dayPlaceholder')}
+                />
+              </div>
             </div>
             <div className="form-group">
               <label>{t('bio')}</label>
@@ -187,7 +276,10 @@ export const Sidebar: React.FC = () => {
               {person.birthYear && (
                 <div className="info-row">
                   <span className="info-label">{t('birthYear')}</span>
-                  <span>{person.birthYear}</span>
+                  <span>
+                    {person.birthYear}{person.birthDate ? ` (${person.birthDate})` : ''}
+                    {person.birthCalendarType === 'lunar' ? ` ${t('lunar')}` : ''}
+                  </span>
                 </div>
               )}
               <div className="info-row">
@@ -197,7 +289,10 @@ export const Sidebar: React.FC = () => {
               {person.deathYear && (
                 <div className="info-row">
                   <span className="info-label">{t('deathYear')}</span>
-                  <span>{person.deathYear}</span>
+                  <span>
+                    {person.deathYear}{person.deathDate ? ` (${person.deathDate})` : ''}
+                    {person.deathCalendarType === 'lunar' ? ` ${t('lunar')}` : ''}
+                  </span>
                 </div>
               )}
             </div>

@@ -38,7 +38,7 @@ interface FamilyState {
 
   addPerson: (name: string, gender: Gender, birthYear?: number) => string;
   removePerson: (id: string) => void;
-  updatePerson: (id: string, patch: Partial<Pick<Person, 'name' | 'gender' | 'birthYear' | 'deathYear' | 'bio' | 'title' | 'avatarImageId' | 'galleryImageIds'>>) => void;
+  updatePerson: (id: string, patch: Partial<Pick<Person, 'name' | 'gender' | 'birthYear' | 'birthDate' | 'deathYear' | 'deathDate' | 'birthCalendarType' | 'deathCalendarType' | 'bio' | 'title' | 'avatarImageId' | 'galleryImageIds'>>) => void;
   setGeneration: (personId: string, newGeneration: number) => void;
   addRelation: (fromId: string, relationType: RelationType, newPersonName: string, newPersonGender: Gender, newPersonBirthYear?: number) => string;
   addRelationToExisting: (fromId: string, relationType: RelationType, targetId: string) => void;
