@@ -152,7 +152,11 @@ export const Sidebar: React.FC = () => {
         ) : (
           <>
             <div className="sidebar-avatar-section">
-              <div className="sidebar-avatar" onClick={() => setShowGallery(true)}>
+              <div
+                className="sidebar-avatar"
+                onClick={() => avatarFileRef.current?.click()}
+                title={t('setAvatar')}
+              >
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={person.name} />
                 ) : (
@@ -160,20 +164,6 @@ export const Sidebar: React.FC = () => {
                     {person.name.charAt(0)}
                   </div>
                 )}
-              </div>
-              <div className="sidebar-avatar-buttons">
-                <button
-                  className="sidebar-avatar-btn"
-                  onClick={() => avatarFileRef.current?.click()}
-                >
-                  {t('setAvatar')}
-                </button>
-                <button
-                  className="sidebar-avatar-btn"
-                  onClick={() => setShowGallery(true)}
-                >
-                  {t('gallery')}
-                </button>
               </div>
               <input
                 ref={avatarFileRef}
@@ -241,6 +231,7 @@ export const Sidebar: React.FC = () => {
             </div>
 
             <div className="sidebar-actions">
+              <button className="btn-gallery" onClick={() => setShowGallery(true)}>{t('gallery')}</button>
               <button className="btn-edit" onClick={startEdit}>{t('edit')}</button>
               <button className="btn-delete" onClick={handleDelete}>{t('delete')}</button>
             </div>

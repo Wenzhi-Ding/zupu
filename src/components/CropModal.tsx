@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
-import Cropper, { type Area } from 'react-easy-crop';
+import React, { useState, useCallback, useRef } from 'react';
+import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { v4 as uuid } from 'uuid';
 import { useFamilyStore } from '../store/familyStore';
 import { saveImage } from '../store/imageDb';
@@ -15,33 +16,50 @@ interface Props {
 }
 
 export const CropModal: React.FC<Props> = ({ personId, sourceUrl, sourceBlob, onClose }) => {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [crop, setCrop] = useState<Crop>({
+    unit: '%',
+    x: 10,
+    y: 10,
+    width: 80,
+    height: 80,
+  });
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const updatePerson = useFamilyStore((s) => s.updatePerson);
   const t = useT();
 
-  const onCropComplete = useCallback((_area: Area, areaPixels: Area) => {
-    setCroppedAreaPixels(areaPixels);
+  const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const size = Math.min(width, height) * 0.8;
+    const c: PixelCrop = {
+      unit: 'px',
+      x: (width - size) / 2,
+      y: (height - size) / 2,
+      width: size,
+      height: size,
+    };
+    setCrop(c);
+    setCompletedCrop(c);
   }, []);
 
   const produceCroppedBlob = async (): Promise<Blob> => {
-    if (!croppedAreaPixels) return sourceBlob;
+    if (!completedCrop || !imgRef.current) return sourceBlob;
 
-    const img = new Image();
-    img.src = sourceUrl;
-    await new Promise((resolve) => { img.onload = resolve; });
-
+    const img = imgRef.current;
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d')!;
+
+    const scaleX = img.naturalWidth / img.width;
+    const scaleY = img.naturalHeight / img.height;
+
     ctx.drawImage(
       img,
-      croppedAreaPixels.x,
-      croppedAreaPixels.y,
-      croppedAreaPixels.width,
-      croppedAreaPixels.height,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
       0,
       0,
       256,
@@ -70,25 +88,23 @@ export const CropModal: React.FC<Props> = ({ personId, sourceUrl, sourceBlob, on
       <div className="crop-modal" onClick={(e) => e.stopPropagation()}>
         <h3>{t('cropAvatar')}</h3>
         <div className="crop-container">
-          <Cropper
-            image={sourceUrl}
+          <ReactCrop
             crop={crop}
-            zoom={zoom}
+            onChange={(_, percentCrop) => setCrop(percentCrop)}
+            onComplete={(c) => setCompletedCrop(c)}
             aspect={1}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
-        </div>
-        <div className="crop-controls">
-          <input
-            type="range"
-            min={1}
-            max={3}
-            step={0.1}
-            value={zoom}
-            onChange={(e) => setZoom(parseFloat(e.target.value))}
-          />
+            minWidth={20}
+            minHeight={20}
+            keepSelection
+          >
+            <img
+              ref={imgRef}
+              src={sourceUrl}
+              onLoad={onImageLoad}
+              alt="Crop preview"
+              style={{ maxHeight: '400px' }}
+            />
+          </ReactCrop>
         </div>
         <div className="dialog-actions">
           <button type="button" className="btn-cancel" onClick={onClose}>

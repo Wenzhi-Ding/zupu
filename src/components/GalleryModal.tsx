@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useFamilyStore } from '../store/familyStore';
 import { saveImage, getImage, deleteImage } from '../store/imageDb';
@@ -21,7 +21,7 @@ export const GalleryModal: React.FC<Props> = ({ personId, onClose }) => {
   const t = useT();
 
   const [editMode, setEditMode] = useState(false);
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [viewerIdx, setViewerIdx] = useState<number | null>(null);
   const [cropSource, setCropSource] = useState<{ url: string; blob: Blob } | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,13 +53,13 @@ export const GalleryModal: React.FC<Props> = ({ personId, onClose }) => {
     if (person.avatarImageId === imageId) {
       updatePerson(personId, { avatarImageId: undefined });
     }
-    setSelectedIdx(null);
   };
 
   const handleSetAsAvatar = async (imageId: string) => {
     const result = await getImage(imageId);
     if (!result) return;
     const url = URL.createObjectURL(result.blob);
+    setViewerIdx(null);
     setCropSource({ url, blob: result.blob });
   };
 
@@ -70,7 +70,7 @@ export const GalleryModal: React.FC<Props> = ({ personId, onClose }) => {
     updatePerson(personId, { galleryImageIds: next });
   };
 
-  const selectedId = selectedIdx !== null ? galleryIds[selectedIdx] : null;
+  const viewerId = viewerIdx !== null ? galleryIds[viewerIdx] : null;
 
   return (
     <>
@@ -87,31 +87,35 @@ export const GalleryModal: React.FC<Props> = ({ personId, onClose }) => {
                   {editMode ? t('doneEditing') : t('editGallery')}
                 </button>
               )}
-              <button className="close-btn" onClick={onClose}>✕</button>
+              <button className="close-btn" onClick={onClose}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
           </div>
 
-          {selectedId && !editMode && (
-            <LargeImageView
-              imageId={selectedId}
-              onPrev={() => setSelectedIdx(Math.max(0, (selectedIdx ?? 0) - 1))}
-              onNext={() => setSelectedIdx(Math.min(galleryIds.length - 1, (selectedIdx ?? 0) + 1))}
-              onSetAvatar={() => handleSetAsAvatar(selectedId)}
-              canPrev={(selectedIdx ?? 0) > 0}
-              canNext={(selectedIdx ?? 0) < galleryIds.length - 1}
-            />
-          )}
-
           <div className="gallery-grid">
             {galleryIds.length === 0 && (
-              <div className="gallery-empty">{t('noGalleryImages')}</div>
+              <div
+                className="gallery-upload-tile gallery-upload-tile--empty"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                <span>{t('noGalleryImages')}</span>
+              </div>
             )}
             {galleryIds.map((imageId, idx) => (
               <GalleryThumb
                 key={imageId}
                 imageId={imageId}
                 editMode={editMode}
-                onClick={() => !editMode && setSelectedIdx(idx)}
+                onClick={() => !editMode && setViewerIdx(idx)}
                 onDelete={() => handleDelete(imageId)}
                 draggable={editMode}
                 onDragStart={() => setDragIdx(idx)}
@@ -124,12 +128,15 @@ export const GalleryModal: React.FC<Props> = ({ personId, onClose }) => {
                 }}
               />
             ))}
-            {!editMode && galleryIds.length < MAX_IMAGES && (
+            {!editMode && galleryIds.length > 0 && galleryIds.length < MAX_IMAGES && (
               <button
                 className="gallery-upload-tile"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span>+</span>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
               </button>
             )}
           </div>
@@ -160,6 +167,16 @@ export const GalleryModal: React.FC<Props> = ({ personId, onClose }) => {
           />
         </div>
       </div>
+
+      {viewerId && viewerIdx !== null && (
+        <GalleryViewer
+          imageId={viewerId}
+          onPrev={() => setViewerIdx((viewerIdx - 1 + galleryIds.length) % galleryIds.length)}
+          onNext={() => setViewerIdx((viewerIdx + 1) % galleryIds.length)}
+          onSetAvatar={() => handleSetAsAvatar(viewerId)}
+          onClose={() => setViewerIdx(null)}
+        />
+      )}
 
       {cropSource && (
         <CropModal
@@ -207,43 +224,104 @@ const GalleryThumb: React.FC<ThumbProps> = ({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      {url && <img src={url} alt="" />}
+      <div className="gallery-thumb-image">
+        {url && <img src={url} alt="" loading="lazy" />}
+      </div>
       {editMode && (
-        <button className="thumb-delete" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
-          ✕
+        <button
+          className="thumb-delete"
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          aria-label="Delete"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       )}
     </div>
   );
 };
 
-interface LargeViewProps {
+interface ViewerProps {
   imageId: string;
   onPrev: () => void;
   onNext: () => void;
   onSetAvatar: () => void;
-  canPrev: boolean;
-  canNext: boolean;
+  onClose: () => void;
 }
 
-const LargeImageView: React.FC<LargeViewProps> = ({
+const GalleryViewer: React.FC<ViewerProps> = ({
   imageId,
   onPrev,
   onNext,
   onSetAvatar,
-  canPrev,
-  canNext,
+  onClose,
 }) => {
   const url = useImageUrl(imageId);
   const t = useT();
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => setVisible(true));
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setVisible(false);
+    setTimeout(onClose, 300);
+  }, [onClose]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+      if (e.key === 'ArrowLeft') onPrev();
+      if (e.key === 'ArrowRight') onNext();
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [handleClose, onPrev, onNext]);
+
   return (
-    <div className="gallery-large">
-      {canPrev && <button className="gallery-nav prev" onClick={onPrev}>‹</button>}
-      {url && <img src={url} alt="" className="gallery-large-img" />}
-      {canNext && <button className="gallery-nav next" onClick={onNext}>›</button>}
-      <button className="gallery-set-avatar" onClick={onSetAvatar}>
-        {t('setAsAvatar')}
+    <div
+      className={`gallery-overlay ${visible ? 'visible' : ''}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+      ref={overlayRef}
+    >
+      <button className="gallery-viewer-close" onClick={handleClose} aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
+
+      <button className="gallery-viewer-nav prev" onClick={onPrev} aria-label="Previous">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <button className="gallery-viewer-nav next" onClick={onNext} aria-label="Next">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="9 6 15 12 9 18" />
+        </svg>
+      </button>
+
+      <div className="gallery-viewer-content">
+        {url && <img src={url} alt="" className="gallery-viewer-img" />}
+        <button className="gallery-viewer-avatar-btn" onClick={onSetAvatar}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          {t('setAsAvatar')}
+        </button>
+      </div>
     </div>
   );
 };

@@ -21,6 +21,14 @@ A visual, interactive family tree editor that runs entirely in your browser. All
 - Manage parent, spouse, and child relationships through an intuitive sidebar
 - Click any card to inspect full details and navigate relationships
 
+### Avatars & Photo Gallery
+
+- Click the avatar in the sidebar to upload and crop a 1:1 profile picture (drag-to-resize crop box)
+- Each person has a personal photo gallery — upload up to 9 images, reorder by drag, delete in edit mode
+- Click any gallery photo to open a full-screen lightbox viewer with keyboard navigation (←/→ to switch, Esc to close)
+- Set any gallery photo as the avatar directly from the viewer
+- Images are stored in IndexedDB, so they persist across sessions independently of the tree data
+
 ### Relationship Discovery
 
 - Select any two people to automatically discover and display the relationship chain between them
@@ -42,9 +50,9 @@ A visual, interactive family tree editor that runs entirely in your browser. All
 
 ### Data Import & Export
 
-- Export your entire family tree as a JSON file for backup or sharing
-- Import JSON files to restore data (replaces all current data and resets the tree filter view)
-- All data persisted in browser `localStorage` — survives page refreshes and browser restarts
+- Export your entire family tree as a JSON or ZIP file (ZIP includes all images) for backup or sharing
+- Import JSON or ZIP files to restore data (replaces all current data and resets the tree filter view)
+- All tree data persisted in browser `localStorage`; images stored in IndexedDB — both survive page refreshes and browser restarts
 
 ### Privacy First
 
@@ -77,7 +85,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser. Click **族
 | State Management | Zustand 5 |
 | Build Tool | Vite 7 |
 | Layout Engine | Custom SVG-based tree layout |
-| Persistence | Browser localStorage |
+| Persistence | Browser localStorage + IndexedDB |
 
 ## Project Structure
 
@@ -87,6 +95,8 @@ src/
 │   ├── FamilyTree     # Main SVG canvas with pan/zoom/drag/rubber-band selection
 │   ├── PersonCard     # Individual person node in the tree (with selection checkbox)
 │   ├── Sidebar        # Person detail panel & relation editing
+│   ├── GalleryModal   # Photo gallery with full-screen lightbox viewer
+│   ├── CropModal      # 1:1 avatar crop (react-image-crop)
 │   ├── TreeManager    # Multi-tree management dialog
 │   ├── RelationshipChain  # Relationship path display
 │   ├── AddPersonDialog    # New person creation form
@@ -120,7 +130,7 @@ The build output (`dist/`) is a fully static site. Deploy it anywhere:
 
 ## Data & Privacy
 
-All data is stored in your browser's `localStorage`. It is never transmitted over the network. We recommend periodically exporting your data as JSON (**导出数据** button) to guard against browser data loss.
+All data is stored in your browser's `localStorage` (tree data) and IndexedDB (images). It is never transmitted over the network. We recommend periodically exporting your data (**导出数据** button) to guard against browser data loss.
 
 ---
 
@@ -147,6 +157,14 @@ All data is stored in your browser's `localStorage`. It is never transmitted ove
 - 通过直观的侧边栏管理父母、配偶和子女关系
 - 点击任意卡片查看完整详情并导航关系
 
+#### 头像与相册
+
+- 点击侧边栏头像即可上传并裁剪 1:1 头像（拖拽裁剪框边缘缩放、拖拽框体移动）
+- 每个人物拥有个人相册——最多上传 9 张照片，支持拖拽排序、编辑模式下删除
+- 点击相册中任意照片打开全屏查看器，支持键盘导航（←/→ 切换，Esc 关闭）
+- 可直接在查看器中将任意照片设为头像
+- 图片存储于 IndexedDB，独立于族谱数据，跨会话持久保留
+
 #### 关系发现
 
 - 选择任意两个人，自动发现并展示他们之间的关系链
@@ -168,9 +186,9 @@ All data is stored in your browser's `localStorage`. It is never transmitted ove
 
 #### 数据导入与导出
 
-- 将整个族谱导出为 JSON 文件用于备份或分享
-- 导入 JSON 文件恢复数据（替换当前所有数据并重置树形筛选视图）
-- 所有数据持久化存储在浏览器 `localStorage` 中，刷新页面和重启浏览器后依然保留
+- 将整个族谱导出为 JSON 或 ZIP 文件（ZIP 包含所有图片）用于备份或分享
+- 导入 JSON 或 ZIP 文件恢复数据（替换当前所有数据并重置树形筛选视图）
+- 族谱数据持久化存储在浏览器 `localStorage` 中，图片存储在 IndexedDB 中，刷新页面和重启浏览器后依然保留
 
 #### 隐私优先
 
@@ -203,7 +221,7 @@ npm run dev
 | 状态管理 | Zustand 5 |
 | 构建工具 | Vite 7 |
 | 布局引擎 | 自定义基于 SVG 的树形布局 |
-| 数据持久化 | 浏览器 localStorage |
+| 数据持久化 | 浏览器 localStorage + IndexedDB |
 
 ### 构建与部署
 
@@ -223,7 +241,7 @@ npm run preview
 
 ### 数据与隐私
 
-所有数据存储在浏览器的 `localStorage` 中，不会通过网络传输。建议定期将数据导出为 JSON（**导出数据** 按钮），以防浏览器数据丢失。
+所有数据存储在浏览器的 `localStorage`（族谱数据）和 IndexedDB（图片）中，不会通过网络传输。建议定期将数据导出（**导出数据** 按钮），以防浏览器数据丢失。
 
 ## License
 

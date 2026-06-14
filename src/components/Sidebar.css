@@ -87,6 +87,7 @@
 
 .sidebar-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
 }
@@ -186,8 +187,7 @@
 
 .sidebar-avatar-section {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  justify-content: center;
   margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid #eee;
@@ -220,24 +220,19 @@
   background: #e8e8e8;
 }
 
-.sidebar-avatar-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sidebar-avatar-btn {
-  background: #f0f0f0;
-  border: none;
-  padding: 6px 16px;
-  border-radius: 6px;
+.btn-gallery {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #4a90d9;
+  border-radius: 8px;
+  background: white;
+  color: #4a90d9;
   cursor: pointer;
   font-size: 13px;
-  white-space: nowrap;
 }
 
-.sidebar-avatar-btn:hover {
-  background: #e0e0e0;
+.btn-gallery:hover {
+  background: #f0f5ff;
 }
 
 @media (max-width: 640px) {
@@ -277,6 +272,11 @@
   }
 
   .btn-edit, .btn-delete {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .btn-gallery {
     padding: 10px;
     font-size: 14px;
   }

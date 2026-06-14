@@ -3,7 +3,6 @@ import type { Person } from '../types';
 import { useFamilyStore } from '../store/familyStore';
 import { getLayoutConstants } from '../layout/engine';
 import { useI18n } from '../i18n';
-import { useAvatarUrl } from '../hooks/useImageUrl';
 import './PersonCard.css';
 
 interface Props {
@@ -58,7 +57,6 @@ export const PersonCard: React.FC<Props> = ({
   const toggleSelectPerson = useFamilyStore((s) => s.toggleSelectPerson);
 
   const isSelectedCard = selectedId === person.id;
-  const avatarUrl = useAvatarUrl(person.id);
   const genderClass = person.gender === 'male' ? 'male' : person.gender === 'female' ? 'female' : '';
   const deceasedClass = person.deathYear ? 'deceased' : '';
   const pathClass = isOnPath ? (isPathEnd ? 'path-end' : 'on-path') : (isPathEnd ? 'path-end' : '');
@@ -96,7 +94,7 @@ export const PersonCard: React.FC<Props> = ({
     nameBottom = nameStartY + (parts.length - 1) * lineHeight;
   } else {
     // Chinese vertical layout
-    const nameStartY = avatarUrl ? 30 : 16;
+    const nameStartY = 16;
     const lineHeight = 17;
     nameElements = nameChars.map((char, i) => (
       <text
@@ -176,26 +174,6 @@ export const PersonCard: React.FC<Props> = ({
           onDragStart(person.id, touch.clientX, touch.clientY);
         }}
       />
-
-      {avatarUrl && (
-        <defs>
-          <clipPath id={`avatar-clip-${person.id}`}>
-            <circle cx={CARD_WIDTH / 2} cy={14} r={11} />
-          </clipPath>
-        </defs>
-      )}
-      {avatarUrl && (
-        <image
-          href={avatarUrl}
-          x={CARD_WIDTH / 2 - 11}
-          y={3}
-          width={22}
-          height={22}
-          clipPath={`url(#avatar-clip-${person.id})`}
-          preserveAspectRatio="xMidYMid slice"
-          className="card-avatar"
-        />
-      )}
 
       {nameElements}
 
