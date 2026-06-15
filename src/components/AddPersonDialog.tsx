@@ -59,16 +59,6 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              className="add-family-intro-btn"
-              onClick={() => {
-                setFamilyIntroPersonId(targetPersonId, true);
-                onClose();
-              }}
-            >
-              {t('addFamilyIntro')}
-            </button>
           </div>
 
           <div className="form-group">
@@ -90,6 +80,16 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
               onChange={(e) => setBirthYear(e.target.value)}
               placeholder={t('birthYearPlaceholder')}
             />
+            <button
+              type="button"
+              className="add-family-intro-btn"
+              onClick={() => {
+                setFamilyIntroPersonId(targetPersonId, true);
+                onClose();
+              }}
+            >
+              {t('addFamilyIntro')}
+            </button>
           </div>
 
           <div className="dialog-actions">
