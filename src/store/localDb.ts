@@ -17,7 +17,7 @@ function validatePerson(raw: unknown, key: string): Person {
 
   const { id, name, gender, birthYear, birthDate, deathYear, deathDate, birthCalendarType, deathCalendarType, title, generation,
           spouseIds, childrenIds, parentIds, collapsed, parentCollapsed, bio,
-          avatarImageId, galleryImageIds } = raw;
+          avatarImageId, galleryImageIds, familyIntro } = raw;
 
   if (typeof id !== 'string' || !id) {
     throw new Error(`Invalid person "${key}": id must be a non-empty string`);
@@ -64,6 +64,9 @@ function validatePerson(raw: unknown, key: string): Person {
       throw new Error(`Invalid person "${key}": galleryImageIds must be a string array if provided`);
     }
   }
+  if (familyIntro !== undefined && typeof familyIntro !== 'string') {
+    throw new Error(`Invalid person "${key}": familyIntro must be a string if provided`);
+  }
 
   if (!Array.isArray(spouseIds)) {
     throw new Error(`Invalid person "${key}": spouseIds must be an array`);
@@ -105,6 +108,7 @@ function validatePerson(raw: unknown, key: string): Person {
     ...(bio !== undefined ? { bio } : {}),
     ...(avatarImageId !== undefined ? { avatarImageId } : {}),
     ...(galleryImageIds !== undefined ? { galleryImageIds } : {}),
+    ...(familyIntro !== undefined ? { familyIntro } : {}),
   };
 }
 

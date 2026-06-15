@@ -21,6 +21,7 @@ export interface Person {
   bio?: string;
   avatarImageId?: string;
   galleryImageIds?: string[];
+  familyIntro?: string;
 }
 
 export type RelationType = 'father' | 'mother' | 'son' | 'daughter' | 'husband' | 'wife';
