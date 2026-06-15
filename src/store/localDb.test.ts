@@ -380,6 +380,42 @@ describe('avatarImageId / galleryImageIds validation', () => {
   });
 });
 
+describe('familyIntro validation', () => {
+  const basePerson = {
+    id: 'test-1',
+    name: 'Test',
+    gender: 'male',
+    generation: 1,
+    spouseIds: [],
+    childrenIds: [],
+    parentIds: [],
+    collapsed: false,
+  };
+
+  it('should accept a valid familyIntro string', () => {
+    const data = {
+      persons: { 'test-1': { ...basePerson, familyIntro: 'A noble family with long history.' } },
+    };
+    const result = importData(JSON.stringify(data));
+    expect(result.persons['test-1'].familyIntro).toBe('A noble family with long history.');
+  });
+
+  it('should accept missing familyIntro', () => {
+    const data = { persons: { 'test-1': basePerson } };
+    const result = importData(JSON.stringify(data));
+    expect(result.persons['test-1'].familyIntro).toBeUndefined();
+  });
+
+  it('should reject non-string familyIntro', () => {
+    const data = {
+      persons: { 'test-1': { ...basePerson, familyIntro: 123 } },
+    };
+    expect(() => importData(JSON.stringify(data))).toThrow(
+      'Invalid person "test-1": familyIntro must be a string if provided',
+    );
+  });
+});
+
 describe('extractImageMeta', () => {
   it('returns undefined when no images field', () => {
     expect(extractImageMeta({ persons: {} })).toBeUndefined();

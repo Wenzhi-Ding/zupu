@@ -309,4 +309,36 @@ describe('useFamilyStore', () => {
       expect(getState().selectedIds).toEqual([]);
     });
   });
+
+  describe('familyIntro', () => {
+    beforeEach(() => {
+      useFamilyStore.getState().reset();
+    });
+
+    it('should update familyIntro via updatePerson', () => {
+      const id = useFamilyStore.getState().addPerson('Test', 'male');
+      useFamilyStore.getState().updatePerson(id, { familyIntro: 'Family history text' });
+      expect(useFamilyStore.getState().persons[id].familyIntro).toBe('Family history text');
+    });
+
+    it('should clear familyIntro when set to undefined', () => {
+      const id = useFamilyStore.getState().addPerson('Test', 'male');
+      useFamilyStore.getState().updatePerson(id, { familyIntro: 'Some text' });
+      useFamilyStore.getState().updatePerson(id, { familyIntro: undefined });
+      expect(useFamilyStore.getState().persons[id].familyIntro).toBeUndefined();
+    });
+
+    it('should set and clear familyIntroPersonId', () => {
+      useFamilyStore.getState().setFamilyIntroPersonId('person-1');
+      expect(useFamilyStore.getState().familyIntroPersonId).toBe('person-1');
+      expect(useFamilyStore.getState().familyIntroEditMode).toBe(false);
+
+      useFamilyStore.getState().setFamilyIntroPersonId('person-2', true);
+      expect(useFamilyStore.getState().familyIntroPersonId).toBe('person-2');
+      expect(useFamilyStore.getState().familyIntroEditMode).toBe(true);
+
+      useFamilyStore.getState().setFamilyIntroPersonId(null);
+      expect(useFamilyStore.getState().familyIntroPersonId).toBe(null);
+    });
+  });
 });
