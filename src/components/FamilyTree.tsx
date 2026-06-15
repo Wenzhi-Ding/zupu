@@ -4,6 +4,7 @@ import { computeLayout, computeUnitPersonOrder, getLayoutConstants } from '../la
 
 import { PersonCard } from './PersonCard';
 import { AddPersonDialog } from './AddPersonDialog';
+import { FamilyIntroModal } from './FamilyIntroModal';
 import { RelationshipChain } from './RelationshipChain';
 import { useI18n, useT } from '../i18n';
 import './FamilyTree.css';
@@ -56,6 +57,7 @@ export const FamilyTree: React.FC = () => {
   const removePersons = useFamilyStore((s) => s.removePersons);
   const movePersonsToParent = useFamilyStore((s) => s.movePersonsToParent);
   const setMoveTargetMode = useFamilyStore((s) => s.setMoveTargetMode);
+  const setFamilyIntroPersonId = useFamilyStore((s) => s.setFamilyIntroPersonId);
   const locale = useI18n((s) => s.locale);
   const { t } = useTranslationHelper();
   const [addingForPersonId, setAddingForPersonId] = useState<string | null>(null);
@@ -770,6 +772,7 @@ export const FamilyTree: React.FC = () => {
           onMoveTargetPick={(targetId) => {
             movePersonsToParent(selectedIds, targetId);
           }}
+          onShowFamilyIntro={(id) => setFamilyIntroPersonId(id)}
         />
       );
     });
@@ -962,6 +965,8 @@ export const FamilyTree: React.FC = () => {
           onClose={() => setAddingForPersonId(null)}
         />
       )}
+
+      <FamilyIntroModal />
 
       {relationPath && relationPath.length >= 2 && (
         <RelationshipChain persons={persons} path={relationPath} />
