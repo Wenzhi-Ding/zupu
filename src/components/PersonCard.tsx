@@ -2,7 +2,7 @@ import React from 'react';
 import type { Person } from '../types';
 import { useFamilyStore } from '../store/familyStore';
 import { getLayoutConstants } from '../layout/engine';
-import { useI18n } from '../i18n';
+import { useI18n, useT } from '../i18n';
 import './PersonCard.css';
 
 interface Props {
@@ -25,6 +25,7 @@ interface Props {
   isSelected?: boolean;
   moveTargetMode?: boolean;
   onMoveTargetPick?: (personId: string) => void;
+  onShowFamilyIntro?: (personId: string) => void;
 }
 
 export const PersonCard: React.FC<Props> = ({
@@ -46,9 +47,11 @@ export const PersonCard: React.FC<Props> = ({
   isSelected,
   moveTargetMode,
   onMoveTargetPick,
+  onShowFamilyIntro,
 }) => {
   const { CARD_WIDTH, CARD_HEIGHT } = getLayoutConstants();
   const locale = useI18n((s) => s.locale);
+  const t = useT();
   const selectPerson = useFamilyStore((s) => s.selectPerson);
   const selectedId = useFamilyStore((s) => s.selectedPersonId);
   const toggleCollapse = useFamilyStore((s) => s.toggleCollapse);
@@ -251,6 +254,21 @@ export const PersonCard: React.FC<Props> = ({
           <circle cx={CARD_WIDTH / 2} cy={-10} r={8} />
           <text x={CARD_WIDTH / 2} y={-6} textAnchor="middle" fontSize={10}>
             {isParentCollapsed ? '▶' : '▲'}
+          </text>
+        </g>
+      )}
+
+      {person.familyIntro && !relationMode && !selectMode && !moveTargetMode && (
+        <g
+          className="card-family-intro-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            onShowFamilyIntro?.(person.id);
+          }}
+        >
+          <circle cx={10} cy={CARD_HEIGHT - 10} r={8} />
+          <text x={10} y={CARD_HEIGHT - 6} textAnchor="middle" fontSize={9} fill="white">
+            {t('familyIntroBadge')}
           </text>
         </g>
       )}

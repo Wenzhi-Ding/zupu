@@ -204,3 +204,26 @@
 .card-avatar {
   pointer-events: none;
 }
+
+.card-family-intro-btn circle {
+  fill: #f0a020;
+  stroke: white;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-family-intro-btn:hover circle {
+  fill: #d8901a;
+}
+
+.card-family-intro-btn text {
+  pointer-events: none;
+  font-weight: 600;
+}
+
+@media (pointer: coarse) {
+  .card-family-intro-btn circle {
+    r: 12;
+  }
+}
