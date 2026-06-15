@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useFamilyStore } from '../store/familyStore';
 import { useT } from '../i18n';
 import './FamilyIntroModal.css';
@@ -13,13 +13,6 @@ export const FamilyIntroModal: React.FC = () => {
 
   const [editText, setEditText] = useState('');
 
-  useEffect(() => {
-    if (familyIntroPersonId && familyIntroEditMode) {
-      const p = persons[familyIntroPersonId];
-      setEditText(p?.familyIntro ?? '');
-    }
-  }, [familyIntroPersonId, familyIntroEditMode, persons]);
-
   if (!familyIntroPersonId) return null;
   const person = persons[familyIntroPersonId];
   if (!person) return null;
@@ -27,7 +20,6 @@ export const FamilyIntroModal: React.FC = () => {
   const isEditing = familyIntroEditMode;
 
   const startEdit = () => {
-    setEditText(person.familyIntro ?? '');
     setFamilyIntroPersonId(familyIntroPersonId, true);
   };
 
@@ -56,8 +48,9 @@ export const FamilyIntroModal: React.FC = () => {
         {isEditing ? (
           <>
             <textarea
+              key={`edit-${familyIntroPersonId}`}
               className="family-intro-textarea"
-              value={editText}
+              defaultValue={person.familyIntro ?? ''}
               onChange={(e) => setEditText(e.target.value)}
               placeholder={t('familyIntroPlaceholder')}
               autoFocus

@@ -25,6 +25,7 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
   const addRelation = useFamilyStore((s) => s.addRelation);
   const targetPerson = useFamilyStore((s) => s.persons[targetPersonId]);
   const t = useT();
+  const setFamilyIntroPersonId = useFamilyStore((s) => s.setFamilyIntroPersonId);
 
   if (!targetPerson) return null;
 
@@ -58,6 +59,16 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
                 </button>
               ))}
             </div>
+            <button
+              type="button"
+              className="add-family-intro-btn"
+              onClick={() => {
+                setFamilyIntroPersonId(targetPersonId, true);
+                onClose();
+              }}
+            >
+              {t('addFamilyIntro')}
+            </button>
           </div>
 
           <div className="form-group">
