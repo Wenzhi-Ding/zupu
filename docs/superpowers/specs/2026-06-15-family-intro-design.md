@@ -2,7 +2,7 @@
 
 ## Summary
 
-Allow users to attach a plain-text "family introduction" to any person card. Every card displays a badge in the bottom-left corner — filled orange when an intro exists, dimmed outline when none exists yet. Clicking the badge opens a centered modal to read or edit the intro. The feature is independent from the existing per-person "bio" field — it describes the family/clan, not the individual.
+Allow users to attach a plain-text "family introduction" to any person card. Cards with an intro display a filled orange badge in the bottom-left corner; clicking it opens a centered modal to read or edit. To create a new intro, the "+" button's AddPersonDialog gains a "增加家族介绍" button below the 6 relation types — clicking it opens the modal directly in edit mode. The feature is independent from the existing per-person "bio" field — it describes the family/clan, not the individual.
 
 ## User-Decided Design Choices
 
@@ -11,9 +11,10 @@ Allow users to attach a plain-text "family introduction" to any person card. Eve
 | Relationship to bio | Independent concept (family-level, not person-level) |
 | Who can have an intro | Any person; one intro per person max |
 | Content format | Plain text (consistent with bio) |
-| Badge position | Bottom-left corner of card (always visible; dimmed when no intro) |
+| Badge position | Bottom-left corner of card (only visible when intro exists) |
 | Expand interaction | Centered modal dialog |
-| Editing entry point | Inside the modal only (read mode + edit mode toggle) |
+| Creation entry point | "增加家族介绍" button in AddPersonDialog (+ button menu) |
+| Editing entry point | Inside the modal (read mode → edit toggle, or direct edit mode from AddPersonDialog) |
 | TreeManager changes | None |
 
 ## Data Model
@@ -42,22 +43,21 @@ This follows the same pattern as `bio`, `title`, and other optional text fields.
 
 ### 1. New: `FamilyIntroModal.tsx` (+ CSS)
 
-A centered modal with two modes:
+A centered modal with two modes. The initial mode is determined by how the modal was opened (see Store section).
 
-**Read mode (default):**
+**Read mode:**
 - Title: `t('familyIntroTitle')` ("家族介绍")
 - Shows the person's name as context
 - Displays `person.familyIntro` as preformatted text (preserves line breaks)
 - Buttons: "编辑" (edit) and "关闭" (close)
-- If `familyIntro` is empty/undefined: show empty-state prompt and default to edit mode so the user can immediately create one
 
 **Edit mode:**
 - Same title
 - `<textarea>` bound to local state, initialized from `person.familyIntro ?? ''`
 - Placeholder: `t('familyIntroPlaceholder')` ("描述这个家族的起源、迁徙、历史等...")
 - Buttons: "保存" (save) and "取消" (cancel)
-- Save: calls `updatePerson(personId, { familyIntro: text.trim() || undefined })`, returns to read mode (or closes if text is empty and was previously empty)
-- Cancel: discards changes, returns to read mode
+- Save: calls `updatePerson(personId, { familyIntro: text.trim() || undefined })`, then closes the modal
+- Cancel: discards changes and closes the modal
 
 **Structure:** Same overlay/backdrop pattern as `GalleryModal.tsx` and `CropModal.tsx`.
 
@@ -66,19 +66,24 @@ A centered modal with two modes:
 Add a badge in the bottom-left corner of the SVG card:
 
 - **Position:** `cx={10}, cy={CARD_HEIGHT - 10}` (i.e., 10px from left, 10px from bottom)
-- **Style:** Two visual states:
-  - **Has intro:** Filled orange circle (`#f0a020`), white border, "族" (zh) / "F" (en) in white text
-  - **No intro yet:** Outline-only dimmed circle (border `#ccc`, transparent fill), "族" (zh) / "F" (en) in gray text
-- **Visibility:** Always rendered on every card (regardless of intro existence), EXCEPT when in `relationMode`, `selectMode`, or `moveTargetMode`
+- **Style:** Filled orange circle (radius 8, `#f0a020`), white border, "族" (zh) / "F" (en) in white text
+- **Visibility:** Only rendered when `person.familyIntro` is truthy AND not in `relationMode`, `selectMode`, or `moveTargetMode`
 - **Click handler:** `e.stopPropagation()` + calls a new prop `onShowFamilyIntro(person.id)`
-- Does NOT trigger `selectPerson` — only opens the modal
-- **Rationale:** The badge must be visible even when no intro exists, otherwise users have no way to create the first intro. The dimmed outline style distinguishes "has intro" from "no intro" without adding a separate entry point.
+- Does NOT trigger `selectPerson` — only opens the modal in read mode
 
-### 3. Modified: `FamilyTree.tsx`
+### 3. Modified: `AddPersonDialog.tsx`
+
+Add a "增加家族介绍" button below the 6 relation-type buttons:
+
+- Positioned after the `.relation-buttons` grid, separated by a small visual divider
+- Styled distinctly from relation buttons (e.g., full-width, different color) to signal it's a different action
+- On click: calls `onClose()` to close the dialog, then opens the FamilyIntroModal in edit mode via `setFamilyIntroPersonId(targetPersonId, true)`
+
+### 4. Modified: `FamilyTree.tsx`
 
 - Reads `familyIntroPersonId` from the store
 - Renders `<FamilyIntroModal>` when `familyIntroPersonId` is set
-- Passes `onShowFamilyIntro` callback to `PersonCard`, which calls `setFamilyIntroPersonId(personId)`
+- Passes `onShowFamilyIntro` callback to `PersonCard`, which calls `setFamilyIntroPersonId(personId)` (defaults to read mode)
 
 ## Store Changes (`src/store/familyStore.ts`)
 
@@ -86,13 +91,18 @@ Add a badge in the bottom-left corner of the SVG card:
 
 ```ts
 familyIntroPersonId: string | null;
+familyIntroEditMode: boolean;  // initial mode when modal opens
 ```
 
 ### New action
 
 ```ts
-setFamilyIntroPersonId: (id: string | null) => void;
+setFamilyIntroPersonId: (id: string | null, editMode?: boolean) => void;
 ```
+
+- `editMode` defaults to `false` (read mode). 
+- Called from PersonCard badge: `setFamilyIntroPersonId(id)` → read mode.
+- Called from AddPersonDialog: `setFamilyIntroPersonId(id, true)` → edit mode.
 
 This action does NOT call `persistState` — it's transient UI state (like `showTreeManager`), not persisted data.
 
@@ -102,7 +112,7 @@ This action does NOT call `persistState` — it's transient UI state (like `show
 
 ### `reset()` and `loadSampleData()`
 
-Set `familyIntroPersonId: null`.
+Set `familyIntroPersonId: null` and `familyIntroEditMode: false`.
 
 ## Persistence Layer (`src/store/localDb.ts`)
 
@@ -124,9 +134,9 @@ New keys:
 |-----|----|----|
 | `familyIntroTitle` | 家族介绍 | Family Introduction |
 | `familyIntroBadge` | 族 | F |
+| `addFamilyIntro` | 增加家族介绍 | Add Family Intro |
 | `editFamilyIntro` | 编辑 | Edit |
 | `familyIntroPlaceholder` | 描述这个家族的起源、迁徙、历史等... | Describe this family's origin, migration, history... |
-| `familyIntroEmpty` | 暂无家族介绍，点击编辑添加 | No family intro yet. Click edit to add one. |
 
 ## CSS (`FamilyIntroModal.css`)
 
@@ -146,13 +156,14 @@ Follow existing modal patterns (GalleryModal.css, CropModal.css):
 
 ### Manual testing
 
-- Add family intro to a person via modal → badge changes from dimmed to filled orange
-- Click badge (with intro) → modal opens in read mode
-- Click badge (without intro) → modal opens directly in edit mode
-- Edit and save → content updates, badge persists
-- Delete all text and save → badge reverts to dimmed outline style (familyIntro becomes undefined)
+- Open "+" dialog → click "增加家族介绍" → modal opens in edit mode
+- Type text and save → badge (orange "族") appears on card
+- Click badge → modal opens in read mode showing the intro
+- Click "编辑" in modal → edit the text → save → content updates
+- Delete all text and save → badge disappears (familyIntro becomes undefined)
+- Open "+" dialog for a person with existing intro → click "增加家族介绍" → modal opens in edit mode with existing text
 - Import/export round-trip preserves familyIntro
-- Badge always shown except in relation mode, select mode, or move target mode
+- Badge not shown in relation mode, select mode, or move target mode
 
 ## Out of Scope
 
