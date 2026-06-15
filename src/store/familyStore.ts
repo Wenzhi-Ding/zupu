@@ -32,13 +32,15 @@ interface FamilyState {
   selectMode: boolean;
   selectedIds: string[];
   moveTargetMode: boolean;
+  familyIntroPersonId: string | null;
+  familyIntroEditMode: boolean;
 
   _dirtyAfterExport: boolean;
   markExported: () => void;
 
   addPerson: (name: string, gender: Gender, birthYear?: number) => string;
   removePerson: (id: string) => void;
-  updatePerson: (id: string, patch: Partial<Pick<Person, 'name' | 'gender' | 'birthYear' | 'birthDate' | 'deathYear' | 'deathDate' | 'birthCalendarType' | 'deathCalendarType' | 'bio' | 'title' | 'avatarImageId' | 'galleryImageIds'>>) => void;
+  updatePerson: (id: string, patch: Partial<Pick<Person, 'name' | 'gender' | 'birthYear' | 'birthDate' | 'deathYear' | 'deathDate' | 'birthCalendarType' | 'deathCalendarType' | 'bio' | 'title' | 'avatarImageId' | 'galleryImageIds' | 'familyIntro'>>) => void;
   setGeneration: (personId: string, newGeneration: number) => void;
   addRelation: (fromId: string, relationType: RelationType, newPersonName: string, newPersonGender: Gender, newPersonBirthYear?: number) => string;
   addRelationToExisting: (fromId: string, relationType: RelationType, targetId: string) => void;
@@ -61,6 +63,7 @@ interface FamilyState {
   removePersons: (ids: string[]) => void;
   movePersonsToParent: (personIds: string[], targetParentId: string) => void;
   setMoveTargetMode: (mode: boolean) => void;
+  setFamilyIntroPersonId: (id: string | null, editMode?: boolean) => void;
   fetchTrees: () => Promise<void>;
   loadTree: (nameOrId: string | null) => Promise<void>;
   setTreeName: (rootName: string, treeName: string) => void;
@@ -237,6 +240,8 @@ export const useFamilyStore = create<FamilyState>()(
       selectMode: false,
       selectedIds: [],
       moveTargetMode: false,
+      familyIntroPersonId: null,
+      familyIntroEditMode: false,
 
       _dirtyAfterExport: false,
       markExported: () => set({ _dirtyAfterExport: false }),
@@ -581,7 +586,7 @@ export const useFamilyStore = create<FamilyState>()(
 
       reset: () => {
         clearLocalData();
-        set({ persons: {}, selectedPersonId: null, siblingOrder: {}, spouseOrder: {}, relationMode: false, relationPickedIds: [], relationPath: null, currentTree: null, availableTrees: [], treeNames: {}, showTreeManager: false, _dirtyAfterExport: false, selectMode: false, selectedIds: [], moveTargetMode: false });
+        set({ persons: {}, selectedPersonId: null, siblingOrder: {}, spouseOrder: {}, relationMode: false, relationPickedIds: [], relationPath: null, currentTree: null, availableTrees: [], treeNames: {}, showTreeManager: false, _dirtyAfterExport: false, selectMode: false, selectedIds: [], moveTargetMode: false, familyIntroPersonId: null, familyIntroEditMode: false });
       },
 
       toggleRelationMode: () => {
@@ -763,6 +768,10 @@ export const useFamilyStore = create<FamilyState>()(
         set({ moveTargetMode: mode });
       },
 
+      setFamilyIntroPersonId: (id, editMode) => {
+        set({ familyIntroPersonId: id, familyIntroEditMode: editMode ?? false });
+      },
+
       setTreeName: (rootName, treeName) => {
         set((state) => {
           const next = { ...state.treeNames, [rootName]: treeName };
@@ -792,6 +801,8 @@ export const useFamilyStore = create<FamilyState>()(
           relationMode: false,
           relationPickedIds: [] as FamilyState['relationPickedIds'],
           relationPath: null as string[] | null,
+          familyIntroPersonId: null as string | null,
+          familyIntroEditMode: false,
           _dirtyAfterExport: false,
         };
         set(update);
