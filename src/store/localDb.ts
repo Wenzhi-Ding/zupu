@@ -5,9 +5,14 @@ const STORAGE_KEY = 'genealogy_data';
 
 const VALID_GENDERS = new Set<string>(['male', 'female', 'unknown']);
 const VALID_CALENDAR_TYPES = new Set<string>(['solar', 'lunar']);
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+function isSafeKey(key: string): boolean {
+  return !DANGEROUS_KEYS.has(key);
 }
 
 function validatePerson(raw: unknown, key: string): Person {
@@ -134,14 +139,39 @@ export function loadLocalData(): LocalData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...EMPTY_DATA };
-    const parsed = JSON.parse(raw) as Partial<LocalData>;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isPlainObject(parsed)) return { ...EMPTY_DATA };
+
+    const persons: Record<string, Person> = {};
+    if (isPlainObject(parsed.persons)) {
+      for (const [key, personRaw] of Object.entries(parsed.persons)) {
+        if (!isSafeKey(key)) continue;
+        try {
+          persons[key] = validatePerson(personRaw, key);
+        } catch {
+          // Skip invalid person entries — don't crash app startup
+        }
+      }
+    }
+
+    let siblingOrder: Record<string, string[]> = {};
+    let spouseOrder: Record<string, string[]> = {};
+    let treeNames: Record<string, string> = {};
+    try {
+      if (parsed.siblingOrder) siblingOrder = validateStringArrayRecord(parsed.siblingOrder, 'siblingOrder');
+      if (parsed.spouseOrder) spouseOrder = validateStringArrayRecord(parsed.spouseOrder, 'spouseOrder');
+      if (parsed.treeNames) treeNames = validateStringRecord(parsed.treeNames, 'treeNames');
+    } catch {
+      // Fall back to empty for corrupted auxiliary fields
+    }
+
     return {
-      persons: parsed.persons ?? {},
-      siblingOrder: parsed.siblingOrder ?? {},
-      spouseOrder: parsed.spouseOrder ?? {},
-      selectedPersonId: parsed.selectedPersonId ?? null,
-      currentTree: parsed.currentTree ?? null,
-      treeNames: parsed.treeNames ?? {},
+      persons,
+      siblingOrder,
+      spouseOrder,
+      selectedPersonId: typeof parsed.selectedPersonId === 'string' ? parsed.selectedPersonId : null,
+      currentTree: typeof parsed.currentTree === 'string' ? parsed.currentTree : null,
+      treeNames,
     };
   } catch {
     return { ...EMPTY_DATA };
@@ -181,6 +211,7 @@ function validateStringRecord(val: unknown, field: string): Record<string, strin
   if (!isPlainObject(val)) throw new Error(`Invalid data format: ${field} must be an object`);
   const result: Record<string, string> = {};
   for (const [k, v] of Object.entries(val)) {
+    if (!isSafeKey(k)) continue;
     if (typeof v !== 'string') throw new Error(`Invalid data format: ${field}["${k}"] must be a string`);
     result[k] = v;
   }
@@ -191,6 +222,7 @@ function validateStringArrayRecord(val: unknown, field: string): Record<string, 
   if (!isPlainObject(val)) throw new Error(`Invalid data format: ${field} must be an object`);
   const result: Record<string, string[]> = {};
   for (const [k, v] of Object.entries(val)) {
+    if (!isSafeKey(k)) continue;
     if (!Array.isArray(v) || !v.every((item): item is string => typeof item === 'string')) {
       throw new Error(`Invalid data format: ${field}["${k}"] must be a string array`);
     }
@@ -212,6 +244,7 @@ export function importData(json: string): LocalData {
 
   const persons: Record<string, Person> = {};
   for (const [key, raw] of Object.entries(parsed.persons)) {
+    if (!isSafeKey(key)) continue;
     persons[key] = validatePerson(raw, key);
   }
 
@@ -232,6 +265,7 @@ export function extractImageMeta(parsed: unknown): Record<string, ImageMeta> | u
   if (!isPlainObject(raw)) throw new Error('Invalid data format: images must be an object');
   const result: Record<string, ImageMeta> = {};
   for (const [k, v] of Object.entries(raw)) {
+    if (!isSafeKey(k)) continue;
     if (!isPlainObject(v)) throw new Error(`Invalid data format: images["${k}"] must be an object`);
     const { id, personId, format, kind } = v as Record<string, unknown>;
     if (typeof id !== 'string' || typeof personId !== 'string' || typeof format !== 'string') {

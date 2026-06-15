@@ -67,8 +67,10 @@ export const FamilyTree: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const panRef = useRef(pan);
   const zoomRef = useRef(zoom);
-  panRef.current = pan;
-  zoomRef.current = zoom;
+  useEffect(() => {
+    panRef.current = pan;
+    zoomRef.current = zoom;
+  }, [pan, zoom]);
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const dragRef = useRef<DragState | null>(null);
@@ -86,7 +88,7 @@ export const FamilyTree: React.FC = () => {
   const skipAnchorRef = useRef(false);
   const initialCenterDone = useRef(false);
 
-  const layout = useMemo(() => computeLayout(persons, siblingOrder), [persons, siblingOrder, locale]);
+  const layout = useMemo(() => computeLayout(persons, siblingOrder), [persons, siblingOrder, locale]); // eslint-disable-line react-hooks/exhaustive-deps -- locale affects card sizes via isEnglish() inside computeLayout
   const { CARD_WIDTH, CARD_HEIGHT, COUPLE_GAP, V_GAP } = getLayoutConstants();
 
   const pathSet = useMemo(() => new Set(relationPath ?? []), [relationPath]);
@@ -112,6 +114,7 @@ export const FamilyTree: React.FC = () => {
       const dx = (oldPos.x - newPos.x) * zoom;
       const dy = (oldPos.y - newPos.y) * zoom;
       if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time viewport adjustment when anchor person changes; clears anchorPersonId below to prevent loops
         setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
       }
     }

@@ -1,5 +1,6 @@
 import type { Person, Gender } from '../types';
 import { t } from '../i18n';
+import type { TranslationKeys } from '../i18n/zh';
 
 export type EdgeDirection = 'parent' | 'child' | 'spouse';
 
@@ -292,10 +293,10 @@ function matchUpDown(pattern: string, minU: number, minD: number): { uCount: num
   return null;
 }
 
-function genderLabel(g: Gender, maleKey: string, femaleKey: string, unknownKey?: string): string {
-  if (g === 'male') return t(maleKey as any);
-  if (g === 'female') return t(femaleKey as any);
-  return unknownKey ? t(unknownKey as any) : `${t(maleKey as any)}/${t(femaleKey as any)}`;
+function genderLabel(g: Gender, maleKey: TranslationKeys, femaleKey: TranslationKeys, unknownKey?: TranslationKeys): string {
+  if (g === 'male') return t(maleKey);
+  if (g === 'female') return t(femaleKey);
+  return unknownKey ? t(unknownKey) : `${t(maleKey)}/${t(femaleKey)}`;
 }
 
 function siblingLabel(sg: Gender, eg: Gender, startPerson: Person, endPerson: Person): string {

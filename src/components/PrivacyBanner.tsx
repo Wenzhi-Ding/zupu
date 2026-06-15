@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useT } from '../i18n';
 import './PrivacyBanner.css';
 
 export const PrivacyBanner: React.FC = () => {
   const t = useT();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const dismissed = localStorage.getItem('genealogy_privacy_dismissed');
-    if (dismissed !== 'true') {
-      setVisible(true);
-    }
-  }, []);
+  const [visible, setVisible] = useState(
+    () => localStorage.getItem('genealogy_privacy_dismissed') !== 'true',
+  );
 
   const handleDismiss = () => {
     localStorage.setItem('genealogy_privacy_dismissed', 'true');

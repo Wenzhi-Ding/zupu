@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterAll } from 'vitest';
 import {
   loadLocalData,
   saveLocalData,
@@ -21,6 +21,7 @@ function createValidPerson(overrides: Partial<Record<string, unknown>> = {}): Re
     spouseIds: [],
     childrenIds: [],
     parentIds: [],
+    collapsed: false,
     ...overrides,
   };
 }
@@ -40,13 +41,11 @@ function createValidLocalData(): LocalData {
 
 describe('loadLocalData', () => {
   let getItemSpy: ReturnType<typeof vi.spyOn>;
-  let setItemSpy: ReturnType<typeof vi.spyOn>;
-  let removeItemSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
-    setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
-    removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {});
   });
 
   afterAll(() => {

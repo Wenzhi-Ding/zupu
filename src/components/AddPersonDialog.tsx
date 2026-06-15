@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { RelationType, Gender } from '../types';
 import { useFamilyStore } from '../store/familyStore';
 import { useT } from '../i18n';
+import type { TranslationKeys } from '../i18n/zh';
 import './AddPersonDialog.css';
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
   onClose: () => void;
 }
 
-const RELATION_OPTIONS: { value: RelationType; labelKey: string; defaultGender: Gender }[] = [
+const RELATION_OPTIONS: { value: RelationType; labelKey: TranslationKeys; defaultGender: Gender }[] = [
   { value: 'father', labelKey: 'father', defaultGender: 'male' },
   { value: 'mother', labelKey: 'mother', defaultGender: 'female' },
   { value: 'son', labelKey: 'son', defaultGender: 'male' },
@@ -55,7 +56,7 @@ export const AddPersonDialog: React.FC<Props> = ({ targetPersonId, onClose }) =>
                   className={`relation-btn ${relationType === opt.value ? 'active' : ''}`}
                   onClick={() => setRelationType(opt.value)}
                 >
-                  {t(opt.labelKey as any)}
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>

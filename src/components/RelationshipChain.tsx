@@ -3,6 +3,7 @@ import type { Person } from '../types';
 import { buildChain, computeVisibleChain } from '../utils/relationshipChain';
 import type { RelationChain, ChainNode, ChainEdge } from '../utils/relationshipChain';
 import { useT } from '../i18n';
+import type { TranslationKeys } from '../i18n/zh';
 import './RelationshipChain.css';
 
 interface Props {
@@ -19,7 +20,7 @@ function renderEdge(edge: ChainEdge) {
   );
 }
 
-function renderNode(node: ChainNode, t: (key: any, params?: Record<string, string | number>) => string, onClick?: () => void) {
+function renderNode(node: ChainNode, t: (key: TranslationKeys, params?: Record<string, string | number>) => string, onClick?: () => void) {
   return (
     <span
       className={`chain-node ${node.collapsible ? 'collapsible' : ''}`}

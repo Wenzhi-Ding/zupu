@@ -9,6 +9,10 @@ import {
 } from './imageDb';
 import type { ImageMeta } from '../types';
 
+const MAX_IMPORT_SIZE = 200 * 1024 * 1024; // 200 MB
+const MAX_ZIP_ENTRIES = 10000;
+const MAX_ZIP_UNCOMPRESSED = 1024 * 1024 * 1024; // 1 GB
+
 function getExportFileName(): string {
   return '族谱数据.zip';
 }
@@ -68,9 +72,30 @@ export function useDataIO() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > MAX_IMPORT_SIZE) {
+      alert(`文件过大（${(file.size / 1024 / 1024).toFixed(1)} MB），最大支持 ${MAX_IMPORT_SIZE / 1024 / 1024} MB`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
       if (file.name.endsWith('.zip')) {
         const zip = await JSZip.loadAsync(file);
+
+        const entries = Object.values(zip.files).filter((f) => !f.dir);
+        if (entries.length > MAX_ZIP_ENTRIES) {
+          throw new Error(`Zip 包含过多文件（${entries.length}），最大支持 ${MAX_ZIP_ENTRIES} 个`);
+        }
+
+        let totalUncompressed = 0;
+        for (const entry of entries) {
+          const uncompressed = (entry as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize ?? 0;
+          totalUncompressed += uncompressed;
+          if (totalUncompressed > MAX_ZIP_UNCOMPRESSED) {
+            throw new Error(`Zip 解压后体积过大，最大支持 ${MAX_ZIP_UNCOMPRESSED / 1024 / 1024} MB`);
+          }
+        }
+
         const jsonFile = zip.file('data.json');
         if (!jsonFile) throw new Error('Zip missing data.json');
 
@@ -134,8 +159,8 @@ export function useDataIO() {
         saveLocalDataImmediate(importState);
         useFamilyStore.getState().fetchTrees();
       }
-    } catch {
-      alert('导入失败：文件格式不正确');
+    } catch (err) {
+      alert(err instanceof Error && err.message ? `导入失败：${err.message}` : '导入失败：文件格式不正确');
     }
 
     if (fileInputRef.current) {

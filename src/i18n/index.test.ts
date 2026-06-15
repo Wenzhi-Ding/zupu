@@ -1,4 +1,5 @@
 import { useI18n, t, isEnglish, detectLocale } from './index';
+import type { TranslationKeys } from './zh';
 
 // ---------------------------------------------------------------------------
 // Helpers – mock navigator for detectLocale tests
@@ -149,7 +150,7 @@ describe('i18n module', () => {
 
     it('returns the key if translation is not found', () => {
       // Cast to any to pass an invalid key for testing
-      expect(t('nonExistentKey' as any)).toBe('nonExistentKey');
+      expect(t('nonExistentKey' as TranslationKeys)).toBe('nonExistentKey');
     });
 
     it('falls back to Chinese if English key has no value', () => {

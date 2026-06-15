@@ -5,7 +5,6 @@ import {
   computeUnitPersonOrder,
   getCardSize,
   getLayoutConstants,
-  type LayoutResult,
 } from './engine';
 
 // Mock the i18n module

@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Person } from '../types';
 
 let uuidCounter = 0;
 vi.mock('uuid', () => ({
@@ -248,7 +247,7 @@ describe('useFamilyStore', () => {
       //             -> Uncle
       const grandfatherId = getState().addPerson('Grandfather', 'male');
       const fatherId = getState().addRelation(grandfatherId, 'son', 'Father', 'male');
-      const uncleId = getState().addRelation(grandfatherId, 'son', 'Uncle', 'male');
+      getState().addRelation(grandfatherId, 'son', 'Uncle', 'male');
       const childId = getState().addRelation(fatherId, 'son', 'Child', 'male');
 
       // Enable relation mode and pick two nodes
