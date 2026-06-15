@@ -275,6 +275,13 @@ const en: Record<TranslationKeys, string> = {
   prevImage: 'Previous',
   nextImage: 'Next',
   dragToReorder: 'Drag to reorder',
+
+  // Family intro
+  familyIntroTitle: 'Family Introduction',
+  familyIntroBadge: 'F',
+  addFamilyIntro: 'Add Family Intro',
+  editFamilyIntro: 'Edit',
+  familyIntroPlaceholder: 'Describe this family\'s origin, migration, history...',
 };
 
 export default en;

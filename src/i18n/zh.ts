@@ -273,6 +273,13 @@ const zh = {
   prevImage: '上一张',
   nextImage: '下一张',
   dragToReorder: '拖动排序',
+
+  // Family intro
+  familyIntroTitle: '家族介绍',
+  familyIntroBadge: '族',
+  addFamilyIntro: '增加家族介绍',
+  editFamilyIntro: '编辑',
+  familyIntroPlaceholder: '描述这个家族的起源、迁徙、历史等...',
 };
 
 export default zh;
