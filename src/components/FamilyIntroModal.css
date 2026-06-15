@@ -1,0 +1,150 @@
+.family-intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.family-intro-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  min-width: 380px;
+  max-width: 560px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+@media (max-width: 640px) {
+  .family-intro-modal {
+    min-width: auto;
+    width: calc(100vw - 32px);
+    max-width: 560px;
+    padding: 20px;
+  }
+}
+
+.family-intro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.family-intro-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1a1a2e;
+}
+
+.family-intro-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  padding: 4px 8px;
+}
+
+.family-intro-close:hover {
+  color: #333;
+}
+
+.family-intro-person-name {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.family-intro-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #333;
+  overflow-y: auto;
+  flex: 1;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.family-intro-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.8;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.family-intro-textarea:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.1);
+}
+
+.family-intro-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.family-intro-actions .btn-cancel {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.family-intro-actions .btn-cancel:hover {
+  background: #f0f0f0;
+}
+
+.family-intro-actions .btn-edit {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #4a90d9;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.family-intro-actions .btn-edit:hover {
+  background: #3a7bc8;
+}
+
+.family-intro-actions .btn-save {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #f0a020;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.family-intro-actions .btn-save:hover {
+  background: #d8901a;
+}
